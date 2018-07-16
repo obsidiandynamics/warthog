@@ -53,11 +53,20 @@ public final class Warthog {
     
     // step through the modules, upgrading the build files
     for (var module : project.getModules()) {
+      System.out.format("Analysing module '%s'... ", module.getPath());
       final var buildFile = workingDirectory + "/" + module.getPath() + "/build.gradle";
       final var namesToVersions = Exceptions.wrap(() -> versionLookup.bulkResolve(module.getDependencies()),
                                                   e -> new WarthogException("Error looking up version: " + e));
-      Exceptions.wrap(() -> GradleTransform.updateDependencies(new File(buildFile), namesToVersions),
-                      e -> new WarthogException("Error transforming build file: " + e));
+      final var updates = Exceptions.wrap(() -> GradleTransform.updateDependencies(new File(buildFile), namesToVersions),
+                                          e -> new WarthogException("Error transforming build file: " + e));
+      if (updates.isEmpty()) {
+        System.out.println("no changes");
+      } else {
+        System.out.println();
+        for (var update : updates) {
+          System.out.format("Updated %s: %s -> %s\n", update.getDependencyName(), update.getOldVersion(), update.getNewVersion());
+        }
+      }
     }
     
     Exceptions.wrap(() -> HttpClient.getInstance().close(),

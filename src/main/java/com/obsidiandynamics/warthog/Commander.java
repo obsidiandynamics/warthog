@@ -26,7 +26,8 @@ public final class Commander {
     final var gitOutput = run("git status").printCommand(sink).printOutput(sink).verifyExitCode(0);
     return 
         gitOutput.getOutput().contains("Changes to be committed") || 
-        gitOutput.getOutput().contains("Untracked files");
+        gitOutput.getOutput().contains("Untracked files") ||
+        gitOutput.getOutput().contains("Changes not staged for commit");
   }
   
   public boolean gitIsAhead() throws CommandExecuteException {
