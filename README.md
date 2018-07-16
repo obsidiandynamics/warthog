@@ -1,6 +1,6 @@
 Warthog
 ===
-Cross-project dependency management for Gradle, at scale. Let's you make changes in one project, publish the build artefacts, then recursively propagate new versions to all dependant projects.
+Cross-project dependency management for Gradle, at scale. Let's you make changes in one project, publish the build artifacts, then recursively propagate new versions to all dependent projects.
 
 Example of `.hog.project`:
 ```yaml

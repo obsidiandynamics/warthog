@@ -2,28 +2,45 @@ package com.obsidiandynamics.warthog;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 public final class GradleTransform {
+  /**
+   *  Matches strings in the form '  version = "x.y.z" // trailing comment'.
+   *  
+   *  @return The {@link Pattern} instance.
+   */
+  private static Pattern getProjectVersionPattern() {
+    return Pattern.compile("^(\\s*version\\s*=\\s*\")(.*)(\".*)$");
+  }
+  
   private GradleTransform() {}
   
-  public static List<Update> updateDependencies(File buildFile, Map<String, String> namesToVersions) throws FileNotFoundException, IOException {
+  public static String getProjectVersion(File buildFile) throws IOException {
+    final var versionPattern = getProjectVersionPattern();
+    try (var reader = new BufferedReader(new FileReader(buildFile))) {
+      for (var line = reader.readLine(); line != null; line = reader.readLine()) {
+        final var matcher = versionPattern.matcher(line);
+        if (matcher.matches()) {
+          return matcher.group(2);
+        }
+      }
+    }
+    return null;
+  }
+  
+  public static List<Update> updateDependencies(File buildFile, Map<String, String> namesToVersions) throws IOException {
     final var tempFile = new File(buildFile + ".tmp");
     tempFile.deleteOnExit();
     if (tempFile.exists()) tempFile.delete();
     
     final var updates = new ArrayList<Update>();
-    var firstLine = true;
     try (var reader = new BufferedReader(new FileReader(buildFile));
          var writer = new BufferedWriter(new FileWriter(tempFile))) {
       for (var line = reader.readLine(); line != null; line = reader.readLine()) {
-        if (firstLine) {
-          firstLine = false;
-        } else {
-          writer.newLine();
-        }
-        
         final var update = updateSingleLine(line, namesToVersions);
         writer.write(update.getLine());
+        writer.newLine();
         if (update.isChanged()) {
           updates.add(update);
         }

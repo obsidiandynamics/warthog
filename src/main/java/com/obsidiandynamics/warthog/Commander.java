@@ -9,9 +9,14 @@ public final class Commander {
   
   private final ProcessExecutor executor = ProcessExecutor.getDefault();
   
-  private final Sink sink = System.out::print;
+  private Sink sink = System.out::print;
   
   private String workingDirectory = ".";
+  
+  public Commander withSink(Sink sink) {
+    this.sink = sink;
+    return this;
+  }
   
   public Commander withWorkingDirectory(String workingDirectory) {
     this.workingDirectory = workingDirectory;
@@ -33,6 +38,10 @@ public final class Commander {
   public boolean gitIsAhead() throws CommandExecuteException {
     final var gitOutput = run("git status").printCommand(sink).printOutput(sink).verifyExitCode(0);
     return gitOutput.getOutput().contains("Your branch is ahead");
+  }
+  
+  public void runCommand(String buildCommand) throws CommandExecuteException {
+    run(buildCommand).printCommand(sink).printOutput(sink).verifyExitCode(0);
   }
   
   public static final class CommandExecuteException extends Exception {
@@ -77,7 +86,7 @@ public final class Commander {
     }
     
     public ExecutionRun verifyExitCode(int expectedExitCode) throws CommandExecuteException {
-      if (exitCode != expectedExitCode) {
+      if (getExitCode() != expectedExitCode) {
         throw new CommandExecuteException(command, output, exitCode);
       }
       return this;
