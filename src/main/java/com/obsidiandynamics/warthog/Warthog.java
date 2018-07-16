@@ -25,8 +25,8 @@ public final class Warthog {
                                    "Project file " + PROJECT_FILE + " not found");
       
       //TODO reinstate
-//      update(workingDirectory, project);
-      publish(workingDirectory, project);
+      update(workingDirectory, project);
+//      publish(workingDirectory, project);
 
       // clean up
       Exceptions.wrap(() -> HttpClient.getInstance().close(),
@@ -51,7 +51,7 @@ public final class Warthog {
 
       final var gitIsAhead = commander.gitIsAhead();
       if (gitIsAhead) {
-        throw new WarthogException("Working copy has unpublished changes");
+        throw new WarthogException("Local repository is ahead of remote");
       }
 
       commander.gitPull();

@@ -2,11 +2,14 @@ package com.obsidiandynamics.warthog;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.*;
 import java.util.regex.*;
+import java.util.stream.*;
 
 public final class GradleTransform {
   /**
-   *  Matches strings in the form '  version = "x.y.z" // trailing comment'.
+   *  Matches strings in the form '  version = "x.y.z" // trailing comment', the spaces around the '='
+   *  character and the text before and after the statement being optional.
    *  
    *  @return The {@link Pattern} instance.
    */
@@ -14,13 +17,25 @@ public final class GradleTransform {
     return Pattern.compile("^(\\s*version\\s*=\\s*\")(.*)(\".*)$");
   }
   
+  /**
+   *  Matches strings in the form '  nameVersion = "x.y.z" // trailing comment', the spaces around the '='
+   *  character and the text before and after the statement being optional. The 'name' portion is the
+   *  {@code dependencyName} argument.
+   *  
+   *  @param dependencyName The dependency name.
+   *  @return The {@link Pattern} instance.
+   */
+  private static Pattern getDependencyVersionPattern(String dependencyName) {
+    return Pattern.compile("^(\\s*" + dependencyName + "Version\\s*=\\s*\")(.*)(\".*)$");
+  }
+  
   private GradleTransform() {}
   
   public static String getProjectVersion(File buildFile) throws IOException {
-    final var versionPattern = getProjectVersionPattern();
+    final var pattern = getProjectVersionPattern();
     try (var reader = new BufferedReader(new FileReader(buildFile))) {
       for (var line = reader.readLine(); line != null; line = reader.readLine()) {
-        final var matcher = versionPattern.matcher(line);
+        final var matcher = pattern.matcher(line);
         if (matcher.matches()) {
           return matcher.group(2);
         }
@@ -34,11 +49,12 @@ public final class GradleTransform {
     tempFile.deleteOnExit();
     if (tempFile.exists()) tempFile.delete();
     
+    final var patterns = buildPatterns(namesToVersions.keySet());
     final var updates = new ArrayList<Update>();
     try (var reader = new BufferedReader(new FileReader(buildFile));
          var writer = new BufferedWriter(new FileWriter(tempFile))) {
       for (var line = reader.readLine(); line != null; line = reader.readLine()) {
-        final var update = updateSingleLine(line, namesToVersions);
+        final var update = updateSingleLine(line, namesToVersions, patterns);
         writer.write(update.getLine());
         writer.newLine();
         if (update.isChanged()) {
@@ -80,31 +96,30 @@ public final class GradleTransform {
       return newVersion;
     }
     
-    boolean isChanged() {
+    public boolean isChanged() {
       return dependencyName != null;
     }
   }
   
-  static Update updateSingleLine(String line, Map<String, String> namesToVersions) {
+  static Map<String, Pattern> buildPatterns(Collection<String> dependencyNames) {
+    return dependencyNames.stream().collect(Collectors.toMap(Function.identity(), GradleTransform::getDependencyVersionPattern));
+  }
+  
+  static Update updateSingleLine(String line, Map<String, String> namesToVersions, Map<String, Pattern> patterns) {
     for (var entry : namesToVersions.entrySet()) {
       final var dependencyName = entry.getKey();
       // we're looking for a line in the form of (ignore single quotes):
-      // 'xxxVersion = "x.y.z" // followed by an optional comment'
-      final var variableNameAndAssignmentOp = dependencyName + "Version = ";
-      final var indexOfVariable = line.indexOf(variableNameAndAssignmentOp);
-      if (indexOfVariable != -1) {
-        // extract the 'xxxVersion = ' bit and any leading indentation
-        final var leadingText = line.substring(0, indexOfVariable + variableNameAndAssignmentOp.length());
-        
-        // preserve everything after the closing quote — the trailing spaces and the inline comment
-        final var indexOfClosingQuote = line.indexOf('"', indexOfVariable + variableNameAndAssignmentOp.length() + 1);
-        final var trailingText = line.substring(indexOfClosingQuote + 1);
-        final var oldVersion = line.substring(indexOfVariable + variableNameAndAssignmentOp.length() + 1, indexOfClosingQuote);
+      // 'nameVersion = "x.y.z" // followed by an optional comment'
+      final var matcher = patterns.get(dependencyName).matcher(line);
+      if (matcher.matches()) {
+        final var leadingText = matcher.group(1);   // '  nameVersion = "'
+        final var versionText = matcher.group(2);   // 'x.y.z'
+        final var trailingText = matcher.group(3);  // '" // trailing comment'
         final var newVersion = entry.getValue();
-        if (! oldVersion.equals(newVersion)) {
+        if (! versionText.equals(newVersion)) {
           // the version has changed — reconstruct the line with the new version
-          final var updatedLine = leadingText + "\"" + entry.getValue() + "\"" + trailingText;
-          return new Update(updatedLine, dependencyName, oldVersion, newVersion);
+          final var updatedLine = leadingText + newVersion + trailingText;
+          return new Update(updatedLine, dependencyName, versionText, newVersion);
         } else {
           return new Update(line, null, null, null); // the versions are the same — return unchanged
         }
