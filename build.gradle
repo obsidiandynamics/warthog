@@ -1,0 +1,189 @@
+plugins {
+  id "com.github.johnrengelman.shadow" version "2.0.4"
+}
+apply plugin: "maven-publish"
+
+def versionFile(extension) {
+  return new File("common/src/main/resources/" + project.name + extension)
+}
+
+def getVersion(extension) {
+  def versionFile = versionFile extension
+  if (! versionFile.exists()) return "0"
+  def reader = new BufferedReader(new FileReader(versionFile))
+  def version = reader.readLine().trim()
+  reader.close()
+  return version
+}
+
+def setVersion(extension, version) {
+  def versionFile = versionFile extension
+  def writer = new BufferedWriter(new FileWriter(versionFile))
+  writer.write(String.valueOf(version))
+  writer.close()
+}
+
+def packageVersion = getVersion ".version"
+def packageBuild = getVersion ".build"
+
+task getBuild() {
+  doLast {
+    println "At ${getVersion('.version')}_${getVersion('.build')}"
+  }
+}
+
+task setBuild() {
+  doLast {
+    def timestamp = new java.text.SimpleDateFormat("yyMMddHHmm").format(new Date())
+    setVersion(".build", timestamp)
+  }
+}
+
+group = "com.obsidiandynamics.warthog"
+version = packageVersion
+
+def baseJvmArgs = [
+  "--add-opens=java.base/java.lang=ALL-UNNAMED",
+  "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+  "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+  "--add-opens=java.base/java.nio=ALL-UNNAMED",
+  "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+  "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+  "-XX:-MaxFDLimit",
+  "-XX:+TieredCompilation",
+  "-XX:+UseNUMA",
+  "-XX:+UseCondCardMark",
+  "-XX:-UseBiasedLocking",
+  "-Djava.net.preferIPv4Stack=true"
+]
+project.ext.set("baseJvmArgs", baseJvmArgs)
+
+allprojects {
+  apply plugin: "java"
+  apply plugin: "jacoco"
+  apply plugin: "maven-publish"
+  apply plugin: "com.github.johnrengelman.shadow"
+  
+  sourceCompatibility = 10 
+  targetCompatibility = 10
+
+  repositories {
+    jcenter()
+    maven {
+      url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+  }
+  
+  ext {
+    fulcrumVersion = "0.15.2"
+    yconfVersion = "0.5.0"
+    jacksonVersion = "2.9.5"
+    httpclientVersion = "4.5.5"
+    httpasyncclientVersion = "4.1.3"
+    
+    repoDir = "${project(':').projectDir}/../../repo"
+  }
+  
+  dependencies {
+    testCompile "com.obsidiandynamics.fulcrum:fulcrum-assert:${fulcrumVersion}"
+    testCompile "com.obsidiandynamics.fulcrum:fulcrum-await:${fulcrumVersion}"
+    testCompile "com.obsidiandynamics.fulcrum:fulcrum-junit:${fulcrumVersion}"
+    testCompile "junit:junit:4.12"
+    testCompile "org.mockito:mockito-core:2.18.0"
+    testCompile "nl.jqno.equalsverifier:equalsverifier:2.4.7"
+    testCompile "pl.pojo:pojo-tester:0.7.6"
+  }
+  
+  compileJava {
+    options.compilerArgs += "-proc:none"
+  }
+
+  compileTestJava {
+    options.compilerArgs += "-proc:none"
+  }
+  
+  tasks.withType(JavaCompile) {
+    options.fork = true
+    options.incremental = true
+  }
+
+  test {
+    include "**/*Test.class"
+    jvmArgs += baseJvmArgs
+  }
+  
+  task integrationTest(type: Test, description: "Runs integration tests", group: "Verification") {
+    include "**/*IT.class"
+    jvmArgs += baseJvmArgs
+  }
+  
+  jacoco {
+    toolVersion = "0.8.2-SNAPSHOT"
+  }
+
+  jacocoTestReport {
+    additionalSourceDirs = files(sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(sourceSets.main.allSource.srcDirs)
+    classDirectories = files(sourceSets.main.output)
+    executionData = files("$buildDir/jacoco/test.exec") + files("$buildDir/jacoco/integrationTest.exec")
+    reports {
+      html.enabled true
+      xml.enabled true
+      csv.enabled false
+    }
+  }
+
+  javadoc {
+    if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
+      options.addStringOption("quiet", "-html5")
+    }
+  }
+}
+
+subprojects {
+}
+
+dependencies {
+  compile "com.obsidiandynamics.fulcrum:fulcrum-func:${fulcrumVersion}"
+  compile "com.obsidiandynamics.fulcrum:fulcrum-io:${fulcrumVersion}"
+  compile "com.obsidiandynamics.fulcrum:fulcrum-shell:${fulcrumVersion}"
+  compile "com.obsidiandynamics.yconf:yconf-core:${yconfVersion}"
+  compile "com.obsidiandynamics.yconf:yconf-snakeyaml:${yconfVersion}"
+  compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
+  compile "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
+  compile "org.apache.commons:commons-lang3:3.7"
+  compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+}
+
+task jacocoRootReport(type: JacocoReport) {
+  mustRunAfter = allprojects.test + allprojects.integrationTest
+  additionalSourceDirs = files(allprojects.sourceSets.main.allSource.srcDirs)
+  sourceDirectories = files(allprojects.sourceSets.main.allSource.srcDirs)
+  classDirectories = files(allprojects.sourceSets.main.output)
+  executionData = files(allprojects.jacocoTestReport.executionData)
+  reports {
+    html.enabled true
+    xml.enabled true
+    csv.enabled false
+  }
+  onlyIf = {
+    true
+  }
+  doFirst {
+    executionData = files(executionData.findAll {
+      it.exists()
+    })
+  }
+  afterEvaluate {
+    classDirectories = files(classDirectories.files.collect {
+      fileTree(dir: it, exclude: ["sample/**", "**/*Uncovered*", "**/generated/**"])
+    })
+  }
+}
+
+def packageName = "warthog"
+
+jar {
+  baseName packageName
+  finalizedBy jacocoRootReport
+}
