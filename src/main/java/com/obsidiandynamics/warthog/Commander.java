@@ -73,12 +73,12 @@ public final class Commander {
     }
   }
   
-  private static final class ExecutionRun {
+  private static final class Execution {
     private final String command;
     private final String output;
     private final int exitCode;
     
-    ExecutionRun(String command, String output, int exitCode) {
+    Execution(String command, String output, int exitCode) {
       this.command = command;
       this.output = output;
       this.exitCode = exitCode;
@@ -88,7 +88,7 @@ public final class Commander {
       return command;
     }
     
-    public ExecutionRun printCommand(Consumer<String> sink) {
+    public Execution printCommand(Consumer<String> sink) {
       sink.accept(command);
       return this;
     }
@@ -97,7 +97,7 @@ public final class Commander {
       return output;
     }
     
-    public ExecutionRun printOutput(Consumer<String> sink) {
+    public Execution printOutput(Consumer<String> sink) {
       sink.accept(output);
       return this;
     }
@@ -106,7 +106,7 @@ public final class Commander {
       return exitCode;
     }
     
-    public ExecutionRun verifyExitCode(int expectedExitCode) throws CommandExecuteException {
+    public Execution verifyExitCode(int expectedExitCode) throws CommandExecuteException {
       if (getExitCode() != expectedExitCode) {
         throw new CommandExecuteException(command, output, exitCode);
       }
@@ -114,7 +114,7 @@ public final class Commander {
     }
   }
   
-  private ExecutionRun run(String command) {
+  private Execution run(String command) {
     final var fullCommand = "cd " + workingDirectory + " && " + command;
     
     final var commandEcho = new StringBuilder();
@@ -128,6 +128,6 @@ public final class Commander {
     final var exitCode = proc        
         .pipeTo(outputEcho::append)
         .await();
-    return new ExecutionRun(commandEcho.toString(), outputEcho.toString(), exitCode);
+    return new Execution(commandEcho.toString(), outputEcho.toString(), exitCode);
   }
 }

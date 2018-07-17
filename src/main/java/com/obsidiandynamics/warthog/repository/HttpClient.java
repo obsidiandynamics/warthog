@@ -1,4 +1,4 @@
-package com.obsidiandynamics.warthog.versionlookup;
+package com.obsidiandynamics.warthog.repository;
 
 import java.security.*;
 

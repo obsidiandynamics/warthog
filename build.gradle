@@ -4,7 +4,7 @@ plugins {
 apply plugin: "maven-publish"
 
 def versionFile(extension) {
-  return new File("common/src/main/resources/" + project.name + extension)
+  return new File("src/main/resources/" + project.name + extension)
 }
 
 def getVersion(extension) {
@@ -146,13 +146,16 @@ subprojects {
 dependencies {
   compile "com.obsidiandynamics.fulcrum:fulcrum-func:${fulcrumVersion}"
   compile "com.obsidiandynamics.fulcrum:fulcrum-io:${fulcrumVersion}"
+  compile "com.obsidiandynamics.fulcrum:fulcrum-props:${fulcrumVersion}"
   compile "com.obsidiandynamics.fulcrum:fulcrum-shell:${fulcrumVersion}"
+  compile "com.obsidiandynamics.fulcrum:fulcrum-version:${fulcrumVersion}"
   compile "com.obsidiandynamics.yconf:yconf-core:${yconfVersion}"
   compile "com.obsidiandynamics.yconf:yconf-snakeyaml:${yconfVersion}"
   compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
   compile "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
   compile "org.apache.commons:commons-lang3:3.7"
   compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+  compile "com.beust:jcommander:1.71"
 }
 
 task jacocoRootReport(type: JacocoReport) {

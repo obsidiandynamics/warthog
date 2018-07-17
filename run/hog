@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# remember where we were called from
+invocation_dir=$(pwd)
+
+linked_script=$(readlink $0)
+if [ "$linked_script" == "" ]; then
+  cd $(dirname "$0")
+else
+  cd $(dirname $linked_script)
+fi
+
+# establish the current version
+version=$(cat ../src/main/resources/warthog.version)
+
+jar_basename=warthog-${version}-all.jar
+jar=../build/libs/${jar_basename}
+if [ ! -f $jar ]; then
+  echo "Error: could not find artifact $jar; make sure you run the build first. Exiting."
+  exit 1
+fi
+
+# copy the jar to /tmp to prevent it from being overwritten by another build
+cp $jar /tmp
+classpath=/tmp/$jar_basename
+
+urls=$1
+java -Dwarthog.dir="${invocation_dir}" -cp $classpath com.obsidiandynamics.warthog.Warthog $@
+

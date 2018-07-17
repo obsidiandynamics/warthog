@@ -1,4 +1,4 @@
-package com.obsidiandynamics.warthog.versionlookup;
+package com.obsidiandynamics.warthog.repository;
 
 import java.util.*;
 
@@ -10,7 +10,7 @@ import org.apache.http.util.*;
 import com.fasterxml.jackson.databind.*;
 import com.obsidiandynamics.func.*;
 
-public final class BintrayVersionLookup implements VersionLookup {
+public final class BintrayRepository implements ArtifactRepository {
   private final ObjectMapper mapper = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       .configure(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS, true);
@@ -22,7 +22,7 @@ public final class BintrayVersionLookup implements VersionLookup {
   }
   
   @Override
-  public String getLatestVersion(String groupId, String artefactId) throws Exception {
+  public String resolveLatestVersion(String groupId, String artefactId) throws Exception {
     final var client = HttpClient.getInstance();
     final var url = String.format("https://bintray.com/api/v1/search/packages/maven?g=%s&a=%s", 
                                   groupId, artefactId);
