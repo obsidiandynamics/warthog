@@ -1,4 +1,6 @@
-build: ./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon
+commands:
+  build: ./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon
+  publish: ./gradlew -x test bintrayUpload --no-daemon
 modules:
 - path: .
   dependencies:

@@ -27,6 +27,11 @@ public final class Commander {
     run("git pull").verifyExitCode(0).printCommand(sink).printOutput(sink);
   }
   
+  public boolean gitHasUntracked() throws CommandExecuteException {
+    final var gitOutput = run("git status").printCommand(sink).printOutput(sink).verifyExitCode(0);
+    return gitOutput.getOutput().contains("Untracked files");
+  }
+  
   public boolean gitHasUncommitted() throws CommandExecuteException {
     final var gitOutput = run("git status").printCommand(sink).printOutput(sink).verifyExitCode(0);
     return 
@@ -38,6 +43,22 @@ public final class Commander {
   public boolean gitIsAhead() throws CommandExecuteException {
     final var gitOutput = run("git status").printCommand(sink).printOutput(sink).verifyExitCode(0);
     return gitOutput.getOutput().contains("Your branch is ahead");
+  }
+  
+  public void gitCommitAll(String message) throws CommandExecuteException {
+    run("git commit -am \"" + message + "\"").verifyExitCode(0).printCommand(sink).printOutput(sink);
+  }
+  
+  public void gitPush() throws CommandExecuteException {
+    run("git push").verifyExitCode(0).printCommand(sink).printOutput(sink);
+  }
+  
+  public void gitTag(String name, String message) throws CommandExecuteException {
+    run("git tag -a " + name + " -m \"" + message + "\"").verifyExitCode(0).printCommand(sink).printOutput(sink);
+  }
+  
+  public void gitPushTag(String name) throws CommandExecuteException {
+    run("git push origin " + name).verifyExitCode(0).printCommand(sink).printOutput(sink);
   }
   
   public void runCommand(String buildCommand) throws CommandExecuteException {

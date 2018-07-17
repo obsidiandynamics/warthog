@@ -9,18 +9,18 @@ import com.obsidiandynamics.yconf.*;
 
 @Y
 public final class ProjectConfig {
-  private final String build;
+  private final CommandsConfig commands;
   
   private final ModuleConfig[] modules;
 
-  public ProjectConfig(@YInject(name="build") String build, 
+  public ProjectConfig(@YInject(name="commands") CommandsConfig commands, 
                        @YInject(name="modules") ModuleConfig[] modules) {
-    this.build = build;
+    this.commands = commands;
     this.modules = modules;
   }
 
-  public String getBuild() {
-    return build;
+  public CommandsConfig getCommands() {
+    return commands;
   }
 
   public ModuleConfig[] getModules() {
@@ -29,7 +29,7 @@ public final class ProjectConfig {
 
   @Override
   public String toString() {
-    return ProjectConfig.class.getSimpleName() + " [build=" + build + ", modules=" + Arrays.toString(modules) + "]";
+    return ProjectConfig.class.getSimpleName() + " [commands=" + commands + ", modules=" + Arrays.toString(modules) + "]";
   }
   
   public static ProjectConfig fromUri(URI uri) throws FileNotFoundException, IOException {

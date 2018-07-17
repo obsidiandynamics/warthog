@@ -22,6 +22,8 @@ public final class HttpClient {
   
   private static final CloseableHttpAsyncClient instance = Exceptions.wrap(HttpClient::createDefault, RuntimeException::new);
   
+  private HttpClient() {}
+  
   public static CloseableHttpAsyncClient getInstance() {
     return instance;
   }

@@ -12,7 +12,8 @@ public final class ProjectConfigTest {
   public void testFromUri() throws FileNotFoundException, IOException {
     final var project = ProjectConfig.fromUri(URI.create("cp://test.hog.project"));
     assertNotNull(project);
-    assertEquals("./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon", project.getBuild());
+    assertEquals("./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon", project.getCommands().getBuild());
+    assertEquals("./gradlew -x test bintrayUpload --no-daemon", project.getCommands().getPublish());
     
     assertEquals(3, project.getModules().length);
     
