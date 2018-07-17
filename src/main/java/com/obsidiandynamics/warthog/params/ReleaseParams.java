@@ -2,7 +2,7 @@ package com.obsidiandynamics.warthog.params;
 
 import com.beust.jcommander.*;
 
-@Parameters(commandDescription="Updates release version, publishes artefacts, starts new snapshot, commits and pushes changes upstream")
+@Parameters(commandDescription="Updates release version, publishes artifacts, starts new snapshot, commits and pushes changes upstream")
 public final class ReleaseParams {
   @Parameter(names="--skip-tag", description="Skips the release tagging step")
   private boolean skipTag;
