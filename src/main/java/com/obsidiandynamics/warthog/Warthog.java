@@ -1,59 +1,80 @@
 package com.obsidiandynamics.warthog;
 
+import static org.fusesource.jansi.Ansi.*;
+
+import java.io.*;
 import java.net.*;
 
+import org.fusesource.jansi.*;
+
 import com.obsidiandynamics.func.*;
+import com.obsidiandynamics.warthog.args.*;
 import com.obsidiandynamics.warthog.config.*;
-import com.obsidiandynamics.warthog.params.*;
-import com.obsidiandynamics.warthog.repository.*;
 import com.obsidiandynamics.warthog.task.*;
 
 public final class Warthog {
   private static final String PROJECT_FILE = ".hog.project";
   
-  public static void main(String[] args) {
-    final var params = Params.parse(args);
-    System.out.format("Warthog %s\n", WarthogVersion.get());
-    if (params.getCommon().isHelp()) {
-      System.out.println(params.usage());
-      System.exit(0);
+  public static void main(String[] argv) {
+    final var out = AnsiConsole.out;
+    WarthogBanner.print(out);
+    
+    final var args = Args.parse(argv);
+    out.print(ansi().bold().fgCyan());
+    out.format("Warthog %s\n", WarthogVersion.get());
+    out.print(ansi().reset());
+    if (args.getCommon().isHelp()) {
+      out.println(args.usage());
+      return;
     }
     
-    final var projectDirectory = params.getCommon().getDirectory();
-    System.out.format("Project directory: %s\n", projectDirectory);
+    final var projectDirectory = args.getCommon().getDirectory();
+    out.print(ansi().fgBrightBlack());
+    out.format("Project directory: %s\n\n", projectDirectory);
+    out.print(ansi().reset());
     final var projectFileUri = URI.create("file://" + projectDirectory + "/" + PROJECT_FILE);
     
     try {
       final var project = doOrFail(() -> ProjectConfig.fromUri(projectFileUri), 
                                    "Project file " + PROJECT_FILE + " not found");
-      
-      switch (params.getCommand()) {
-        case "update":
-          UpdateTask.perform(params, project);
-          break;
-          
-        case "release":
-          ReleaseTask.perform(params, project);
-          break;
-          
-        default:
-          System.out.println("No command given. Exiting.");
-          break;
+      final var httpClient = Exceptions.wrap(HttpClient::create,
+                                             TaskException.formatted("Error creating HTTP client: %s"));
+      final long startTime = System.currentTimeMillis();
+      try {
+        final var context = new WarthogContext(out, args, project, httpClient);
+        
+        if (args.getCommand() != null) {
+          switch (args.getCommand()) {
+            case "update":
+              UpdateTask.perform(context);
+              return;
+              
+            case "release":
+              ReleaseTask.perform(context);
+              return;
+              
+            default:
+              printError(out, "Unsupported command " + args.getCommand());
+              return;
+          }
+        } else {
+          out.println("No command given; exiting.");
+          return;
+        }
+      } finally {
+        // clean up
+        Exceptions.wrap(httpClient::close, TaskException.formatted("Error closing HTTP client: %s"));
+        final var took = (int) ((System.currentTimeMillis() - startTime) / 1000d);
+        out.println(ansi().fgBrightBlack().a("Took " + took + " s").reset());
       }
-
-      // clean up
-      Exceptions.wrap(() -> HttpClient.getInstance().close(),
-                      TaskException.formatted("Error closing HTTP client: %s"));
     } catch (TaskException e) {
-      exitWithError(e.getMessage());
+      printError(out, e.getMessage());
     }
   }
   
-  private static void exitWithError(String message) {
-    System.out.println();
-    System.out.flush();
-    System.err.println(message);
-    System.exit(1);
+  private static void printError(PrintStream out, String message) {
+    out.println();
+    out.println(ansi().bold().fgRed().a("✘ ").a(message).reset());
   }
   
   private static <T, X extends Throwable> T doOrFail(CheckedSupplier<T, X> supplier, String message) throws TaskException {

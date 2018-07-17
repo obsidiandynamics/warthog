@@ -156,6 +156,7 @@ dependencies {
   compile "org.apache.commons:commons-lang3:3.7"
   compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
   compile "com.beust:jcommander:1.71"
+  compile "org.fusesource.jansi:jansi:1.17.1"
 }
 
 task jacocoRootReport(type: JacocoReport) {
@@ -183,10 +184,24 @@ task jacocoRootReport(type: JacocoReport) {
     })
   }
 }
+ 
+artifacts {
+  archives jar
+  archives shadowJar
+}
 
 def packageName = "warthog"
 
 jar {
   baseName packageName
   finalizedBy jacocoRootReport
+}
+
+task install(type:Exec) {
+  dependsOn build
+  commandLine 'run/install'
+}
+
+task uninstall(type:Exec) {
+  commandLine 'run/uninstall'
 }

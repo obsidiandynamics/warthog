@@ -1,0 +1,8 @@
+#!/bin/sh
+
+target_link=/usr/local/bin/hog
+if [ -L $target_link ]; then
+  rm $target_link
+else
+  echo "No symbolic $target_link found; skipping."
+fi

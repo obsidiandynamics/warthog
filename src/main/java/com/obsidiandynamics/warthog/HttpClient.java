@@ -1,4 +1,4 @@
-package com.obsidiandynamics.warthog.repository;
+package com.obsidiandynamics.warthog;
 
 import java.security.*;
 
@@ -13,22 +13,14 @@ import org.apache.http.nio.conn.*;
 import org.apache.http.nio.conn.ssl.*;
 import org.apache.http.nio.reactor.*;
 
-import com.obsidiandynamics.func.*;
-
 public final class HttpClient {
-  private static final int TIMEOUT_MILLIS = 10_000;
+  private static final int TIMEOUT_MILLIS = 30_000;
 
   private static final int POOL_SIZE = 8;
   
-  private static final CloseableHttpAsyncClient instance = Exceptions.wrap(HttpClient::createDefault, RuntimeException::new);
-  
   private HttpClient() {}
   
-  public static CloseableHttpAsyncClient getInstance() {
-    return instance;
-  }
-  
-  private static CloseableHttpAsyncClient createDefault() throws IOReactorException, NoSuchAlgorithmException {
+  public static CloseableHttpAsyncClient create() throws IOReactorException, NoSuchAlgorithmException {
     final var sessionStrategy = RegistryBuilder
         .<SchemeIOSessionStrategy>create()
         .register("http", NoopIOSessionStrategy.INSTANCE)

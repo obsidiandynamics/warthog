@@ -1,27 +1,27 @@
-package com.obsidiandynamics.warthog.params;
+package com.obsidiandynamics.warthog.args;
 
 import com.beust.jcommander.*;
 
-public final class Params {
-  private final CommonParams common = new CommonParams();
+public final class Args {
+  private final CommonArgs common = new CommonArgs();
   
-  private final UpdateParams update = new UpdateParams();
+  private final UpdateArgs update = new UpdateArgs();
   
-  private final ReleaseParams release = new ReleaseParams();
+  private final ReleaseArgs release = new ReleaseArgs();
   
   private String command;
   
-  private Params() {}
+  private Args() {}
   
-  public CommonParams getCommon() {
+  public CommonArgs getCommon() {
     return common;
   }
 
-  public UpdateParams getUpdate() {
+  public UpdateArgs getUpdate() {
     return update;
   }
   
-  public ReleaseParams getRelease() {
+  public ReleaseArgs getRelease() {
     return release;
   }
   
@@ -40,15 +40,15 @@ public final class Params {
     return buffer.toString();
   }
 
-  public static Params parse(String... args) {
-    final var params = new Params();
-    final var commander = createCommander(params);
-    commander.parse(args);
-    params.command = commander.getParsedCommand();
-    return params;
+  public static Args parse(String... argv) {
+    final var args = new Args();
+    final var commander = createCommander(args);
+    commander.parse(argv);
+    args.command = commander.getParsedCommand();
+    return args;
   }
   
-  private static JCommander createCommander(Params params) {
+  private static JCommander createCommander(Args params) {
     return JCommander.newBuilder()
         .addObject(params.common)
         .addCommand("update", params.update)

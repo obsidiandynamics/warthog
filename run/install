@@ -1,0 +1,12 @@
+#!/bin/sh
+
+target_link=/usr/local/bin/hog
+if [ -L $target_link ]; then
+  echo "Symbolic link already exists: ${target_link}; skipping installation."
+  exit 0
+fi
+
+cd $(dirname "$0")
+ln -s $(pwd)/hog $target_link
+
+echo "Installed to $target_link"

@@ -1,11 +1,11 @@
-package com.obsidiandynamics.warthog.params;
+package com.obsidiandynamics.warthog.args;
 
 import java.util.function.*;
 
 import com.beust.jcommander.*;
 import com.obsidiandynamics.props.*;
 
-public final class CommonParams {
+public final class CommonArgs {
   @Parameter(names={"-d", "--directory"}, description="Sets the project directory")
   private String directory = Props.get("warthog.dir", Function.identity(), ".");
   

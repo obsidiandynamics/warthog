@@ -1,21 +1,23 @@
 package com.obsidiandynamics.warthog.task;
 
 import static com.obsidiandynamics.warthog.task.Tasks.*;
+import static org.fusesource.jansi.Ansi.*;
 
 import java.io.*;
 
 import com.obsidiandynamics.func.*;
 import com.obsidiandynamics.warthog.*;
-import com.obsidiandynamics.warthog.config.*;
-import com.obsidiandynamics.warthog.params.*;
 
 public final class ReleaseTask {
   private ReleaseTask() {}
 
-  public static void perform(Params params, ProjectConfig project) throws TaskException {
-    final var projectDirectory = params.getCommon().getDirectory();
+  public static void perform(WarthogContext context) throws TaskException {
+    final var out = context.getOut();
+    final var args = context.getArgs();
+    final var project = context.getProject();
+    final var projectDirectory = args.getCommon().getDirectory();
 
-    System.out.println("Running publish task");
+    out.println(ansi().bold().fgGreen().a("Running release task").reset());
     final var commander = new Commander()
         .withSink(__ -> {})
         .withWorkingDirectory(projectDirectory);
@@ -32,70 +34,70 @@ public final class ReleaseTask {
     
     // commit changes with the current (snapshot) version
     trapCommandException(() -> {
-      System.out.format("Updating local copy... ");
+      out.format("Updating local copy... ");
       commander.gitPull();
-      System.out.println("done");
+      out.println(ansi().bold().fgGreen().a("done").reset());
       
-      System.out.format("Committing changes... ");
+      out.format("Committing changes... ");
       final var gitHasUncommitted = commander.gitHasUncommitted();
       if (gitHasUncommitted) {
         if (commander.gitHasUntracked()) {
           throw new TaskException("Untracked changes found");
         }
-        commander.gitCommitAll(params.getRelease().getCommitMessage());
-        System.out.println("done");
+        commander.gitCommitAll(args.getRelease().getCommitMessage());
+        out.println(ansi().bold().fgGreen().a("done").reset());
       } else {
-        System.out.println("skipped");
+        out.println(ansi().bold().fgYellow().a("skipped").reset());
       }
     });
     
     // update to release version
     final var releaseVersion = Versions.toRelease(initialVersion);
-    System.out.format("Updating project version: %s -> %s\n", initialVersion, releaseVersion);
+    out.format("Updating project version: %s -> %s\n", initialVersion, releaseVersion);
     Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, releaseVersion),
                     TaskException.formatted("Error patching build file: %s"));
     
     // commit, push and tag the release; then publish
     trapCommandException(() -> {
-      System.out.format("Committing release... ");
+      out.format("Committing release... ");
       commander.gitCommitAll("[Warthog] Release " + releaseVersion);
-      System.out.println("done");
+      out.println(ansi().bold().fgGreen().a("done").reset());
 
-      System.out.format("Pushing to remote... ");
+      out.format("Pushing to remote... ");
       commander.gitPush();
-      System.out.println("done");
+      out.println(ansi().bold().fgGreen().a("done").reset());
       
-      System.out.format("Tagging release... ");
-      if (! params.getRelease().isSkipTag()) {
+      out.format("Tagging release... ");
+      if (! args.getRelease().isSkipTag()) {
         commander.gitTag(releaseVersion, "Release " + releaseVersion);
         commander.gitPushTag(releaseVersion);
-        System.out.println("done");
+        out.println(ansi().bold().fgGreen().a("done").reset());
       } else {
-        System.out.println("skipped");
+        out.println(ansi().bold().fgYellow().a("skipped").reset());
       }
 
-      System.out.format("Publishing artifacts... ");
-      if (! params.getRelease().isSkipPublish()) {
+      out.format("Publishing artifacts... ");
+      if (! args.getRelease().isSkipPublish()) {
         commander.runCommand(project.getCommands().getPublish());
-        System.out.println("done");
+        out.println(ansi().bold().fgGreen().a("done").reset());
       } else {
-        System.out.println("skipped");
+        out.println(ansi().bold().fgYellow().a("skipped").reset());
       }
     });
     
     // roll over to the next snapshot version, commit and push
     final var nextSnapshotVersion = Versions.toSnapshot(Versions.rollSegment(releaseVersion, 1));
-    System.out.format("Updating project version: %s -> %s\n", releaseVersion, nextSnapshotVersion);
+    out.format("Updating project version: %s -> %s\n", releaseVersion, nextSnapshotVersion);
     Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, nextSnapshotVersion),
                     TaskException.formatted("Error patching build file: %s"));
     trapCommandException(() -> {
-      System.out.format("Committing snapshot... ");
+      out.format("Committing snapshot... ");
       commander.gitCommitAll("[Warthog] Next snapshot");
-      System.out.println("done");
+      out.println(ansi().bold().fgGreen().a("done").reset());
 
-      System.out.format("Pushing to remote... ");
+      out.format("Pushing to remote... ");
       commander.gitPush();
-      System.out.println("done");
+      out.println(ansi().bold().fgGreen().a("done").reset());
     });
   }
 }

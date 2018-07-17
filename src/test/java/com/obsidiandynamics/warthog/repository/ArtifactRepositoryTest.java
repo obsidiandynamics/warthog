@@ -8,19 +8,20 @@ import org.junit.*;
 import org.mockito.*;
 
 import com.obsidiandynamics.warthog.config.*;
-import com.obsidiandynamics.warthog.repository.*;
 
 public final class ArtifactRepositoryTest {
   @Test
   public void testBulkResolve() throws Exception {
-    final var lookup = mock(ArtifactRepository.class, Answers.CALLS_REAL_METHODS);
-    when(lookup.resolveLatestVersion(any(String.class), any(String.class))).thenAnswer(invocation -> {
-      final var groupId = invocation.<String>getArgument(0);
+    final var repo = mock(ArtifactRepository.class, Answers.CALLS_REAL_METHODS);
+    when(repo.resolveLatestVersion(any(), any(), any()))
+    .thenAnswer(invocation -> {
+      final var groupId = invocation.<String>getArgument(1);
       return groupId + ".0";
     });
     
-    final var namesToVersions = lookup
-        .bulkResolve(new DependencyConfig[] {
+    final var namesToVersions = repo
+        .bulkResolve(null, 
+                     new DependencyConfig[] {
                                              new DependencyConfig("fulcrum", "fulcrumGroup", "fulcrumArtifact"),
                                              new DependencyConfig("yconf", "yconfGroup", "yconfArtifact")});
     assertEquals(2, namesToVersions.size());

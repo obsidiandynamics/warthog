@@ -9,6 +9,7 @@ import org.apache.http.util.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.obsidiandynamics.func.*;
+import com.obsidiandynamics.warthog.*;
 
 public final class BintrayRepository implements ArtifactRepository {
   private final ObjectMapper mapper = new ObjectMapper()
@@ -22,13 +23,12 @@ public final class BintrayRepository implements ArtifactRepository {
   }
   
   @Override
-  public String resolveLatestVersion(String groupId, String artefactId) throws Exception {
-    final var client = HttpClient.getInstance();
+  public String resolveLatestVersion(WarthogContext context, String groupId, String artefactId) throws Exception {
     final var url = String.format("https://bintray.com/api/v1/search/packages/maven?g=%s&a=%s", 
                                   groupId, artefactId);
     final var get = new HttpGet(url);
     get.setHeader("Accepts", ContentType.APPLICATION_JSON.getMimeType());
-    final var response = client.execute(get, null).get();
+    final var response = context.getHttpClient().execute(get, null).get();
     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
       throw new BintrayResponseException("Call to " + url + " resulted in " + response.getStatusLine());
     }
