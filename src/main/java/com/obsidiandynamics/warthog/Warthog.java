@@ -18,22 +18,26 @@ public final class Warthog {
   public static void main(String[] argv) {
     final var out = AnsiConsole.out;
     WarthogBanner.print(out);
-    
+
     final var args = Args.parse(argv);
     out.print(ansi().bold().fgCyan());
     out.format("Warthog %s\n", WarthogVersion.get());
     out.print(ansi().reset());
     if (args.getCommon().isHelp()) {
-      out.println(args.usage());
+      out.println(new AnsiString(args.usage())
+                  .retouchPattern("Options:", ansi().bold())
+                  .retouchPattern("Commands:", ansi().bold())
+                  .retouchPattern("\\s{4}update", ansi().bold().fgYellow())
+                  .retouchPattern("\\s{4}release", ansi().bold().fgYellow()));
       return;
     }
-    
+
     final var projectDirectory = args.getCommon().getDirectory();
     out.print(ansi().fgBrightBlack());
     out.format("Project directory: %s\n\n", projectDirectory);
     out.print(ansi().reset());
     final var projectFileUri = URI.create("file://" + projectDirectory + "/" + PROJECT_FILE);
-    
+
     try {
       final var project = doOrFail(() -> ProjectConfig.fromUri(projectFileUri), 
                                    "Project file " + PROJECT_FILE + " not found");
@@ -42,17 +46,17 @@ public final class Warthog {
       final long startTime = System.currentTimeMillis();
       try {
         final var context = new WarthogContext(out, args, project, httpClient);
-        
+
         if (args.getCommand() != null) {
           switch (args.getCommand()) {
             case "update":
               UpdateTask.perform(context);
               return;
-              
+
             case "release":
               ReleaseTask.perform(context);
               return;
-              
+
             default:
               printError(out, "Unsupported command " + args.getCommand());
               return;
@@ -71,12 +75,12 @@ public final class Warthog {
       printError(out, e.getMessage());
     }
   }
-  
+
   private static void printError(PrintStream out, String message) {
     out.println();
     out.println(ansi().bold().fgRed().a("✘ ").a(message).reset());
   }
-  
+
   private static <T, X extends Throwable> T doOrFail(CheckedSupplier<T, X> supplier, String message) throws TaskException {
     return Exceptions.wrap(supplier, e -> new TaskException(message));
   }
