@@ -27,8 +27,8 @@ public final class Warthog {
       out.println(new AnsiString(args.usage())
                   .retouchPattern("Options:", ansi().bold())
                   .retouchPattern("Commands:", ansi().bold())
-                  .retouchPattern("\\s{4}update", ansi().bold().fgYellow())
-                  .retouchPattern("\\s{4}release", ansi().bold().fgYellow()));
+                  .retouchPattern("\\s{4}update", ansi().bold().fgGreen())
+                  .retouchPattern("\\s{4}release", ansi().bold().fgGreen()));
       return;
     }
 
