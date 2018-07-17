@@ -19,7 +19,14 @@ public final class Warthog {
     final var out = AnsiConsole.out;
     WarthogBanner.print(out);
 
-    final var args = Args.parse(argv);
+    final Args args;
+    try {
+      args = Args.parse(argv);
+    } catch (Throwable e) {
+      exitWithError(out, "Error parsing arguments: " + e.getMessage());
+      return;
+    }
+    
     out.print(ansi().bold().fgCyan());
     out.format("Warthog %s\n", WarthogVersion.get());
     out.print(ansi().reset());
@@ -43,7 +50,7 @@ public final class Warthog {
                                    "Project file " + PROJECT_FILE + " not found");
       final var httpClient = Exceptions.wrap(HttpClient::create,
                                              TaskException.formatted("Error creating HTTP client: %s"));
-      final long startTime = System.currentTimeMillis();
+      final var startTime = System.currentTimeMillis();
       try {
         final var context = new WarthogContext(out, args, project, httpClient);
 
@@ -58,7 +65,7 @@ public final class Warthog {
               return;
 
             default:
-              printError(out, "Unsupported command " + args.getCommand());
+              exitWithError(out, "Unsupported command " + args.getCommand());
               return;
           }
         } else {
@@ -72,13 +79,14 @@ public final class Warthog {
         out.println(ansi().fgBrightBlack().a("Took " + took + " s").reset());
       }
     } catch (TaskException e) {
-      printError(out, e.getMessage());
+      exitWithError(out, e.getMessage());
     }
   }
 
-  private static void printError(PrintStream out, String message) {
+  private static void exitWithError(PrintStream out, String message) {
     out.println();
     out.println(ansi().bold().fgRed().a("✘ ").a(message).reset());
+    System.exit(1);
   }
 
   private static <T, X extends Throwable> T doOrFail(CheckedSupplier<T, X> supplier, String message) throws TaskException {
