@@ -3,6 +3,10 @@
 target_link=/usr/local/bin/hog
 if [ -L $target_link ]; then
   rm $target_link
+  if [ $? -ne 0 ]; then
+    echo "Failed to remove symbolic link; exiting."
+    exit 1
+  fi
 else
   echo "No symbolic $target_link found; skipping."
 fi

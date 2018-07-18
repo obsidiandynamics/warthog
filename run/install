@@ -8,5 +8,9 @@ fi
 
 cd $(dirname "$0")
 ln -s $(pwd)/hog $target_link
+if [ $? -ne 0 ]; then
+  echo "Failed to create symbolic link; existing."
+  exit 1
+fi
 
 echo "Installed to $target_link"
