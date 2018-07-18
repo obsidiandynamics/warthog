@@ -69,7 +69,7 @@ public final class ReleaseTask {
     });
     
     // roll over to the next snapshot version, commit and push
-    final var nextSnapshotVersion = Versions.toSnapshot(Versions.rollSegment(releaseVersion, 1));
+    final var nextSnapshotVersion = Versions.toSnapshot(Versions.rollMinor(releaseVersion));
     out.format("Updating project version: %s -> %s\n", releaseVersion, nextSnapshotVersion);
     Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, nextSnapshotVersion),
                     TaskException.formatted("Error patching build file: %s"));

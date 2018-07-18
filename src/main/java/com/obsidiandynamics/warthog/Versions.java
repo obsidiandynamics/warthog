@@ -1,6 +1,7 @@
 package com.obsidiandynamics.warthog;
 
 import java.util.*;
+import java.util.regex.*;
 import java.util.stream.*;
 
 import com.obsidiandynamics.concat.*;
@@ -34,9 +35,24 @@ public final class Versions {
     return new Concat().appendArray(".", versionSegments.toArray()).toString();
   }
   
-  public static String rollSegment(String version, int segmentIndex) {
-    final var versionSegments = parse(version);
-    versionSegments.set(segmentIndex, versionSegments.get(segmentIndex) + 1);
-    return format(versionSegments);
+  /**
+   *  Increments the minor version — the second segment from the left in a conventional Maven-style
+   *  version string.
+   *  
+   *  @param version The version.
+   *  @return Incremented version.
+   */
+  public static String rollMinor(String version) {
+    final var pattern = Pattern.compile("^([^\\\\.]+\\.)(\\d+)(\\.?.*)$");
+    final var matcher = pattern.matcher(version);
+    if (matcher.matches()) {
+      final var leadingText = matcher.group(1);
+      final var minorVersionText = matcher.group(2);
+      final var trailingText = matcher.group(3);
+      final var minorVersion = Integer.parseInt(minorVersionText);
+      return leadingText + (minorVersion + 1) + trailingText;
+    } else {
+      throw new IllegalArgumentException("Invalid version '" + version + "'"); 
+    }
   }
 }

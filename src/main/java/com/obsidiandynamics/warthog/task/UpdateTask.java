@@ -39,7 +39,7 @@ public final class UpdateTask {
       runConditional(out, "Updating local copy", "done", ! args.getUpdate().isSkipPrep(), commander::gitPull);
     });
     
-    // we only support one repository interface for now; future versions may introduce more
+    // we only support one repository interface for now, but Bintray also covers Maven Central, so it should suffice
     final var respository = new BintrayRepository();
     
     // step through the modules, upgrading the build files

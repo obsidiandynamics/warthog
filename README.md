@@ -136,7 +136,7 @@ Steps 5–6 can be skipped with `--skip-tag`.
 
 Step 7 can be skipped with `--skip-publish`.
 
-**Note:** Warthog expects the project version to appear in the root `build.gradle` file, in the form `version = "x.y.z[-SNAPSHOT]"`. The version segments must be separated by a period and may only contain numbers, with the exception of the `-SNAPSHOT` suffix. The number of segments must be two or more. The second segment from the left will be rolled as part of the staging the next snapshot. Other strings, such as 'alpha', 'beta', 'RC', and so forth, are not supported.
+**Note:** Warthog expects the project version to appear in the root `build.gradle` file, in the form `version = "x.y.z[-qualifier]"`. The version must be conform to [Maven conventions](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN400) and may have optional qualifiers. The second segment from the left (the minor version) will be incremented in the release workflow as part of staging the next snapshot, and therefore must be numeric.
 
 # Gotchas
 * Warthog workflows take care in ensuring that they operate on clean working copies and synced local repos. The likelihood of collisions is low, but not zero. Warthog will terminate if any of the orchestrated operations fail, leaving you to resolve conflicts manually.
@@ -145,20 +145,16 @@ Step 7 can be skipped with `--skip-publish`.
 
 # Limitations
 * Only Gradle is supported, with and without the wrapper. Other build tools, such as Maven, SBT, Ant/Ivy, etc. are not supported.
-* For the release workflow, the project version must be in the root `build.gradle` file and follow the strict `version = "x.y.z[-SNAPSHOT]"` form described earlier.
+* For the release workflow, the project version must be in the root `build.gradle` file and follow the strict `version = "x.y.z[-qualifier]"` form described earlier.
 * For the update workflow, the dependency versions must appear in `build.gradle` files in the strict `nameVersion = "x.y.z"` form described earlier.
 
 # FAQ
 ## Is Warthog orchestrated using Warthog?
-An obligatory question; to dispel hypocrisy — yes, it is.
+An obligatory question. To dispel hypocrisy — yes, it is.
 
 ## Where did the name Warthog come from?
 The answer could have been along the lines of _"it was the only name that wasn't taken"_ or _"because warthogs are particularly good at such and such"_ or _"it's an exotic acronym"_ or even _"the word 'hog' is particularly easy to type"_. The truth is that any answer is as good (or bad) as the next; there is no rationale behind the naming.
 
-## Are there any plans for supporting the full Maven version numbering scheme?
-In short, yes. This could be the next cab off the rank.
-
 ## How is this different from [Gradle Versions Plugin](https://github.com/ben-manes/gradle-versions-plugin)?
 There is lots of overlap for identifying prospective package updates and the two can be used together effectively. Warthog is still in its infancy, and is mostly concerned with orchestrating updates and standardising releases. (Automation, in one word.) Gradle Versions Plugin (GVP) integrates tightly with Gradle and provides a comprehensive report on both plugin and dependency versions, requiring nothing more than your existing Gradle setup. But GVP cannot orchestrate version updates, verify builds, perform tagged releases or publish artifacts. And although GVP is only a reporting tool, it doesn't make it any less useful — just a bit different to Warthog.
-
 

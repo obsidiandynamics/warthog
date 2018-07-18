@@ -41,8 +41,11 @@ public final class VersionsTest {
   
   @Test
   public void testRollSegment() {
-    assertEquals("1.1.2", Versions.rollSegment("0.1.2", 0));
-    assertEquals("0.2.2", Versions.rollSegment("0.1.2", 1));
-    assertEquals("0.1.3", Versions.rollSegment("0.1.2", 2));
+    assertEquals("0.2.2", Versions.rollMinor("0.1.2"));
+    assertEquals("0.2-alpha", Versions.rollMinor("0.1-alpha"));
+    assertEquals("0.2.RC1", Versions.rollMinor("0.1.RC1"));
+    assertEquals("0.2.2-SNAPSHOT", Versions.rollMinor("0.1.2-SNAPSHOT"));
+    assertEquals("0.2.2-beta2-SNAPSHOT", Versions.rollMinor("0.1.2-beta2-SNAPSHOT"));
+    assertEquals("0.2", Versions.rollMinor("0.1"));
   }
 }
