@@ -45,6 +45,7 @@ public final class ArgsTest {
     assertEquals("some/directory", args.getCommon().getDirectory());
     assertEquals("update", args.getCommand());
     assertFalse(args.getUpdate().isSkipBuild());
+    assertFalse(args.getUpdate().isSkipPrep());
   }
   
   @Test
@@ -53,6 +54,15 @@ public final class ArgsTest {
     assertEquals("some/directory", args.getCommon().getDirectory());
     assertEquals("update", args.getCommand());
     assertTrue(args.getUpdate().isSkipBuild());
+    assertFalse(args.getUpdate().isSkipPrep());
+  }
+  
+  @Test
+  public void testParseWithSkipPrep() {
+    final var args = Args.parse("update", "--skip-prep");
+    assertEquals("update", args.getCommand());
+    assertFalse(args.getUpdate().isSkipBuild());
+    assertTrue(args.getUpdate().isSkipPrep());
   }
   
   @Test

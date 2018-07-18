@@ -17,7 +17,7 @@ public final class ReleaseTask {
     final var project = context.getProject();
     final var projectDirectory = args.getCommon().getDirectory();
 
-    out.println(ansi().bold().fgGreen().a("Running release task").reset());
+    out.println(ansi().fgGreen().a("Running release task").reset());
     final var commander = new Commander()
         .withSink(__ -> {})
         .withWorkingDirectory(projectDirectory);

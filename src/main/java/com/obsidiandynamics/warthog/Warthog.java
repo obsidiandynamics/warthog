@@ -28,7 +28,7 @@ public final class Warthog {
     }
     
     out.print(ansi().bold().fgCyan());
-    out.format("Warthog %s\n", WarthogVersion.get());
+    out.println(ansi().bold().fgCyan().a("Warthog").boldOff().a(" version " + WarthogVersion.get()).reset());
     out.print(ansi().reset());
     if (args.getCommon().isHelp()) {
       out.println(new AnsiString(args.usage())
@@ -76,7 +76,7 @@ public final class Warthog {
         // clean up
         Exceptions.wrap(httpClient::close, TaskException.formatted("Error closing HTTP client: %s"));
         final var took = (int) ((System.currentTimeMillis() - startTime) / 1000d);
-        out.println(ansi().fgBrightBlack().a("Took " + took + " s").reset());
+        out.println(ansi().fgBrightBlack().a("\nTook " + took + " s").reset());
       }
     } catch (TaskException e) {
       exitWithError(out, e.getMessage());
@@ -85,7 +85,7 @@ public final class Warthog {
 
   private static void exitWithError(PrintStream out, String message) {
     out.println();
-    out.println(ansi().bold().fgRed().a("✘ ").a(message).reset());
+    out.println(ansi().fgRed().a("✘ ").a(message).reset());
     System.exit(1);
   }
 

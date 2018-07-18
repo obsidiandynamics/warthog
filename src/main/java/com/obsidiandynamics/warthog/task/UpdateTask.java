@@ -18,7 +18,7 @@ public final class UpdateTask {
     final var project = context.getProject();
     final var projectDirectory = args.getCommon().getDirectory();
     
-    out.println(ansi().bold().fgGreen().a("Running update task").reset());
+    out.println(ansi().fgGreen().a("Running update task").reset());
     final var commander = new Commander()
         .withSink(__ -> {})
         .withWorkingDirectory(projectDirectory);
@@ -26,22 +26,34 @@ public final class UpdateTask {
     // ensure that the working copy is in sync with the remote
     trapException(() -> {
       out.format("Verifying working copy... ");
-      final var gitHasUncommitted = commander.gitHasUncommitted();
-      if (gitHasUncommitted) {
-        throw new TaskException("Working copy has uncommitted or untracked changes");
+      if (! args.getUpdate().isSkipPrep()) {
+        final var gitHasUncommitted = commander.gitHasUncommitted();
+        if (gitHasUncommitted) {
+          throw new TaskException("Working copy has uncommitted or untracked changes");
+        }
+        out.println(ansi().bold().fgGreen().a("ready").reset());
+      } else {
+        out.println(ansi().bold().fgYellow().a("skipped").reset());
       }
-      out.println(ansi().bold().fgGreen().a("ready").reset());
 
       out.format("Verifying local repository... ");
-      final var gitIsAhead = commander.gitIsAhead();
-      if (gitIsAhead) {
-        throw new TaskException("Local repository is ahead of remote");
+      if (! args.getUpdate().isSkipPrep()) {
+        final var gitIsAhead = commander.gitIsAhead();
+        if (gitIsAhead) {
+          throw new TaskException("Local repository is ahead of remote");
+        }
+        out.println(ansi().bold().fgGreen().a("ready").reset());
+      } else {
+        out.println(ansi().bold().fgYellow().a("skipped").reset());
       }
-      out.println(ansi().bold().fgGreen().a("ready").reset());
 
       out.format("Updating local copy... ");
-      commander.gitPull();
-      out.println(ansi().bold().fgGreen().a("done").reset());
+      if (! args.getUpdate().isSkipPrep()) {
+        commander.gitPull();
+        out.println(ansi().bold().fgGreen().a("done").reset());
+      } else {
+        out.println(ansi().bold().fgYellow().a("skipped").reset());
+      }
     });
     
     // we only support one repository interface for now; future versions may introduce more
@@ -69,7 +81,7 @@ public final class UpdateTask {
     }
     
     if (! updatedAnyModule) {
-      out.println(ansi().bold().fgYellow().a("All modules are up to date. Exiting.").reset());
+      out.println(ansi().fgYellow().a("All modules are up to date. Exiting.").reset());
       return false;
     }
     
