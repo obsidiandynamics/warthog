@@ -150,12 +150,15 @@ Step 7 can be skipped with `--skip-publish`.
 
 # FAQ
 ## Is Warthog orchestrated using Warthog?
-An obligatory question, to dispel hypocrisy. Yes, it is.
+An obligatory question; to dispel hypocrisy — yes, it is.
 
 ## Where did the name Warthog come from?
-The answer could have been along the lines of _"it was the only name that wasn't taken"_ or _"because warthogs are particularly good at such and such"_ or _"it's an abbreviation for"_ or even _"the word 'hog' is particularly easy to type"_. The truth is that any answer is as good (or bad) as the next; the name was selected at random.
+The answer could have been along the lines of _"it was the only name that wasn't taken"_ or _"because warthogs are particularly good at such and such"_ or _"it's an exotic acronym"_ or even _"the word 'hog' is particularly easy to type"_. The truth is that any answer is as good (or bad) as the next; there is no rationale behind the naming.
 
 ## Are there any plans for supporting the full Maven version numbering scheme?
 In short, yes. This could be the next cab off the rank.
+
+## How is this different from [Gradle Versions Plugin](https://github.com/ben-manes/gradle-versions-plugin)?
+There is lots of overlap for identifying prospective package updates and the two can be used together effectively. Warthog is still in its infancy, and is mostly concerned with orchestrating updates and standardising releases. (Automation, in one word.) Gradle Versions Plugin (GVP) integrates tightly with Gradle and provides a comprehensive report on both plugin and dependency versions, requiring nothing more than your existing Gradle setup. But GVP cannot orchestrate version updates, verify builds, perform tagged releases or publish artifacts. And although GVP is only a reporting tool, it doesn't make it any less useful — just a bit different to Warthog.
 
 
