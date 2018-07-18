@@ -64,7 +64,7 @@ public final class UpdateTask {
     }
     
     if (! updatedAnyModule) {
-      out.println(ansi().fgYellow().a("All modules are up to date. Exiting.").reset());
+      out.println(ansi().fgYellow().a("All modules are up to date; exiting.").reset());
       return false;
     }
     
