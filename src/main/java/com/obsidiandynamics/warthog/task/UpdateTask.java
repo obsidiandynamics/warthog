@@ -1,5 +1,6 @@
 package com.obsidiandynamics.warthog.task;
 
+import static com.obsidiandynamics.func.Functions.*;
 import static com.obsidiandynamics.warthog.task.Tasks.*;
 import static org.fusesource.jansi.Ansi.*;
 
@@ -25,35 +26,17 @@ public final class UpdateTask {
     
     // ensure that the working copy is in sync with the remote
     trapException(() -> {
-      out.format("Verifying working copy... ");
-      if (! args.getUpdate().isSkipPrep()) {
-        final var gitHasUncommitted = commander.gitHasUncommitted();
-        if (gitHasUncommitted) {
-          throw new TaskException("Working copy has uncommitted or untracked changes");
-        }
-        out.println(ansi().bold().fgGreen().a("ready").reset());
-      } else {
-        out.println(ansi().bold().fgYellow().a("skipped").reset());
-      }
+      runConditional(out, "Verifying working copy", "ready", ! args.getUpdate().isSkipPrep(), () -> {
+        mustBeTrue(! commander.gitHasUncommitted(), 
+                   withMessage("Working copy has uncommitted or untracked changes", TaskException::new));
+      });
 
-      out.format("Verifying local repository... ");
-      if (! args.getUpdate().isSkipPrep()) {
-        final var gitIsAhead = commander.gitIsAhead();
-        if (gitIsAhead) {
-          throw new TaskException("Local repository is ahead of remote");
-        }
-        out.println(ansi().bold().fgGreen().a("ready").reset());
-      } else {
-        out.println(ansi().bold().fgYellow().a("skipped").reset());
-      }
-
-      out.format("Updating local copy... ");
-      if (! args.getUpdate().isSkipPrep()) {
-        commander.gitPull();
-        out.println(ansi().bold().fgGreen().a("done").reset());
-      } else {
-        out.println(ansi().bold().fgYellow().a("skipped").reset());
-      }
+      runConditional(out, "Verifying local repository", "ready", ! args.getUpdate().isSkipPrep(), () -> {
+        mustBeTrue(! commander.gitIsAhead(),
+                   withMessage("Local repository is ahead of remote", TaskException::new));
+      });
+      
+      runConditional(out, "Updating local copy", "done", ! args.getUpdate().isSkipPrep(), commander::gitPull);
     });
     
     // we only support one repository interface for now; future versions may introduce more
@@ -86,15 +69,11 @@ public final class UpdateTask {
     }
     
     // verify that the build passes
-    out.format("Building project... ");
-    if (! args.getUpdate().isSkipBuild()) {
-      trapException(() -> {
+    trapException(() -> {
+      runConditional(out, "Building project", "passed", ! args.getUpdate().isSkipBuild(), () -> {
         commander.runCommand(project.getCommands().getBuild());
       });
-      out.println(ansi().bold().fgGreen().a("passed").reset());
-    } else {
-      out.println(ansi().bold().fgYellow().a("skipped").reset());
-    }
+    });
     
     return true;
   }

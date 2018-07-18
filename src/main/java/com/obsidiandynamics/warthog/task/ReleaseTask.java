@@ -34,21 +34,14 @@ public final class ReleaseTask {
     
     // commit changes with the current (snapshot) version
     trapException(() -> {
-      out.format("Updating local copy... ");
-      commander.gitPull();
-      out.println(ansi().bold().fgGreen().a("done").reset());
+      runConditional(out, "Updating local copy", "done", true, commander::gitPull);
       
-      out.format("Committing changes... ");
-      final var gitHasUncommitted = commander.gitHasUncommitted();
-      if (gitHasUncommitted) {
+      runConditional(out, "Committing changes", "done", commander.gitHasUncommitted(), () -> {
         if (commander.gitHasUntracked()) {
           throw new TaskException("Untracked changes found");
         }
         commander.gitCommitAll(args.getRelease().getCommitMessage());
-        out.println(ansi().bold().fgGreen().a("done").reset());
-      } else {
-        out.println(ansi().bold().fgYellow().a("skipped").reset());
-      }
+      });
     });
     
     // update to release version
@@ -59,30 +52,20 @@ public final class ReleaseTask {
     
     // commit, push and tag the release; then publish
     trapException(() -> {
-      out.format("Committing release... ");
-      commander.gitCommitAll("[Warthog] Release " + releaseVersion);
-      out.println(ansi().bold().fgGreen().a("done").reset());
+      runConditional(out, "Committing release", "done", true, () -> {
+        commander.gitCommitAll("[Warthog] Release " + releaseVersion);
+      });
 
-      out.format("Pushing to remote... ");
-      commander.gitPush();
-      out.println(ansi().bold().fgGreen().a("done").reset());
+      runConditional(out, "Pushing to remote", "done", true, commander::gitPush);
       
-      out.format("Tagging release... ");
-      if (! args.getRelease().isSkipTag()) {
+      runConditional(out, "Tagging release", "done", ! args.getRelease().isSkipTag(), () -> {
         commander.gitTag(releaseVersion, "Release " + releaseVersion);
         commander.gitPushTag(releaseVersion);
-        out.println(ansi().bold().fgGreen().a("done").reset());
-      } else {
-        out.println(ansi().bold().fgYellow().a("skipped").reset());
-      }
+      });
 
-      out.format("Publishing artifacts... ");
-      if (! args.getRelease().isSkipPublish()) {
+      runConditional(out, "Publishing artifacts", "done", ! args.getRelease().isSkipPublish(), () -> {
         commander.runCommand(project.getCommands().getPublish());
-        out.println(ansi().bold().fgGreen().a("done").reset());
-      } else {
-        out.println(ansi().bold().fgYellow().a("skipped").reset());
-      }
+      });
     });
     
     // roll over to the next snapshot version, commit and push
@@ -91,13 +74,11 @@ public final class ReleaseTask {
     Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, nextSnapshotVersion),
                     TaskException.formatted("Error patching build file: %s"));
     trapException(() -> {
-      out.format("Committing snapshot... ");
-      commander.gitCommitAll("[Warthog] Next snapshot");
-      out.println(ansi().bold().fgGreen().a("done").reset());
+      runConditional(out, "Committing snapshot", "done", true, () -> {
+        commander.gitCommitAll("[Warthog] Next snapshot");
+      });
 
-      out.format("Pushing to remote... ");
-      commander.gitPush();
-      out.println(ansi().bold().fgGreen().a("done").reset());
+      runConditional(out, "Pushing to remote", "done", true, commander::gitPush);
     });
   }
 }
