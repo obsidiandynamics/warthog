@@ -78,6 +78,8 @@ dependencies {
 ## Requirements
 Warthog works on *NIX and macOS and requires a local installation of [Java 10 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk10-downloads-4416644.html). We also need Git. Windows-based environments are not supported.
 
+JDK 10 is only a requirement to build and run Warthog; the actual projects may still be built with the suitable version of the JDK.
+
 ## Installation
 Paste the following into a terminal.
 ```sh
@@ -134,10 +136,26 @@ Steps 5–6 can be skipped with `--skip-tag`.
 
 Step 7 can be skipped with `--skip-publish`.
 
+**Note:** Warthog expects the project version to appear in the root `build.gradle` file, in the form `version = "x.y.z[-SNAPSHOT]"`. The version segments must be separated by a period and may only contain numbers, with the exception of the `-SNAPSHOT` suffix. The number of segments must be two or more. The second segment from the left will be rolled as part of the staging the next snapshot. Other strings, such as 'alpha', 'beta', 'RC', and so forth, are not supported.
+
 # Gotchas
-* Warthog workflows take great care in ensuring that they operate on clean working copies and synced local repos. The likelihood of collisions is low, but not zero. Warthog will terminate if any of the orchestrated operations fail, leaving you to resolve conflicts manually.
+* Warthog workflows take care in ensuring that they operate on clean working copies and synced local repos. The likelihood of collisions is low, but not zero. Warthog will terminate if any of the orchestrated operations fail, leaving you to resolve conflicts manually.
 * If running `update` and `release` with a time gap in-between, it's recommended that you commit any work that you may have separately, so it doesn't get bundled into Warthog's commits.
-* Tagging does not automatically include release notes, as this is outside the scope of Git. (GitHub, GitLab, BitBucket, _et al._ have their own concepts of releases.) You'll need to manually write up a release and link it to a prior tag. (Future Warthog could offer a deeper integration into hosted repositories.)
+* Tagging does not automatically include release notes, as this is outside the scope of Git. (GitHub, GitLab, BitBucket, _et al._ have their own concepts of releases.) You'll need to manually write up a release and link it to a prior tag. (Future Warthog could offer deeper integration into hosted repositories.)
 
 # Limitations
-* Only Bintray is supported.
+* Only Gradle is supported, with and without the wrapper. Other build tools, such as Maven, SBT, Ant/Ivy, etc. are not supported.
+* For the release workflow, the project version must be in the root `build.gradle` file and follow the strict `version = "x.y.z[-SNAPSHOT]"` form described earlier.
+* For the update workflow, the dependency versions must appear in `build.gradle` files in the strict `nameVersion = "x.y.z"` form described earlier.
+
+# FAQ
+## Is Warthog orchestrated using Warthog?
+An obligatory question, to dispel hypocrisy. Yes, it is.
+
+## Where did the name Warthog come from?
+The answer could have been along the lines of _"it was the only name that wasn't taken"_ or _"because warthogs are particularly good at such and such"_ or _"it's an abbreviation for"_ or even _"the word 'hog' is particularly easy to type"_. The truth is that any answer is as good (or bad) as the next; the name was selected at random.
+
+## Are there any plans for supporting the full Maven version numbering scheme?
+In short, yes. This could be the next cab off the rank.
+
+

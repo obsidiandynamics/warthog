@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.*;
 import com.obsidiandynamics.func.*;
 import com.obsidiandynamics.warthog.*;
 
+/**
+ *  Uses the Maven query capability of Bintray to resolve the package version.
+ */
 public final class BintrayRepository implements ArtifactRepository {
   private final ObjectMapper mapper = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
