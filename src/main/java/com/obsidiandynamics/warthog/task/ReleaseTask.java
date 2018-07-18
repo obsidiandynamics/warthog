@@ -33,7 +33,7 @@ public final class ReleaseTask {
     }
     
     // commit changes with the current (snapshot) version
-    trapCommandException(() -> {
+    trapException(() -> {
       out.format("Updating local copy... ");
       commander.gitPull();
       out.println(ansi().bold().fgGreen().a("done").reset());
@@ -58,7 +58,7 @@ public final class ReleaseTask {
                     TaskException.formatted("Error patching build file: %s"));
     
     // commit, push and tag the release; then publish
-    trapCommandException(() -> {
+    trapException(() -> {
       out.format("Committing release... ");
       commander.gitCommitAll("[Warthog] Release " + releaseVersion);
       out.println(ansi().bold().fgGreen().a("done").reset());
@@ -90,7 +90,7 @@ public final class ReleaseTask {
     out.format("Updating project version: %s -> %s\n", releaseVersion, nextSnapshotVersion);
     Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, nextSnapshotVersion),
                     TaskException.formatted("Error patching build file: %s"));
-    trapCommandException(() -> {
+    trapException(() -> {
       out.format("Committing snapshot... ");
       commander.gitCommitAll("[Warthog] Next snapshot");
       out.println(ansi().bold().fgGreen().a("done").reset());

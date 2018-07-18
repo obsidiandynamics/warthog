@@ -9,9 +9,11 @@ public final class TasksTest {
   public void testConformance() {
     Assertions.assertUtilityClassWellDefined(Tasks.class);
   }
-  
-  @Test
-  public void testTrapCommandException() {
-    //TODO
+
+  @Test(expected=TaskException.class)
+  public void testTrapException() throws TaskException {
+    Tasks.trapException(() -> {
+      throw new Exception("Simulated error");
+    });
   }
 }

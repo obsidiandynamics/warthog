@@ -21,14 +21,14 @@ public final class ProjectConfigTest {
     assertEquals(3, project.getModules()[0].getDependencies().length);
     assertEquals("fulcrum", project.getModules()[0].getDependencies()[0].getName());
     assertEquals("com.obsidiandynamics.fulcrum", project.getModules()[0].getDependencies()[0].getGroupId());
-    assertEquals("fulcrum-func", project.getModules()[0].getDependencies()[0].getArtefactId());
+    assertEquals("fulcrum-func", project.getModules()[0].getDependencies()[0].getArtifactId());
     
 
     assertEquals("ledger-meteor", project.getModules()[1].getPath());
     assertEquals(1, project.getModules()[1].getDependencies().length);
     assertEquals("meteor", project.getModules()[1].getDependencies()[0].getName());
     assertEquals("com.obsidiandynamics.meteor", project.getModules()[1].getDependencies()[0].getGroupId());
-    assertEquals("meteor-core", project.getModules()[1].getDependencies()[0].getArtefactId());
+    assertEquals("meteor-core", project.getModules()[1].getDependencies()[0].getArtifactId());
 
     assertEquals("ledger-kafka", project.getModules()[2].getPath());
     assertEquals(1, project.getModules()[2].getDependencies().length);

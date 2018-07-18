@@ -38,4 +38,10 @@ public final class WarthogContext {
   public CloseableHttpAsyncClient getHttpClient() {
     return httpClient;
   }
+
+  @Override
+  public String toString() {
+    return WarthogContext.class.getSimpleName() + " [out=" + out + ", args=" + args + ", project=" + project + 
+        ", httpClient=" + httpClient + "]";
+  }
 }

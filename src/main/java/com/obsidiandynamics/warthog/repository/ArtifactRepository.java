@@ -13,7 +13,7 @@ public interface ArtifactRepository {
     final var namesToVersions = new HashMap<String, String>(dependencies.length);
     for (var dependency : dependencies) {
       namesToVersions.put(dependency.getName(), 
-                          resolveLatestVersion(context, dependency.getGroupId(), dependency.getArtefactId()));
+                          resolveLatestVersion(context, dependency.getGroupId(), dependency.getArtifactId()));
     }
     return namesToVersions;
   }

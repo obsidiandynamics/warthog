@@ -8,14 +8,14 @@ public final class DependencyConfig {
   
   private final String groupId;
 
-  private final String artefactId;
+  private final String artifactId;
 
   public DependencyConfig(@YInject(name="name") String name, 
                           @YInject(name="groupId") String groupId, 
-                          @YInject(name="artefactId") String artefactId) {
+                          @YInject(name="artifactId") String artifactId) {
     this.name = name;
     this.groupId = groupId;
-    this.artefactId = artefactId;
+    this.artifactId = artifactId;
   }
 
   public String getName() {
@@ -26,13 +26,13 @@ public final class DependencyConfig {
     return groupId;
   }
 
-  public String getArtefactId() {
-    return artefactId;
+  public String getArtifactId() {
+    return artifactId;
   }
 
   @Override
   public String toString() {
     return DependencyConfig.class.getSimpleName() + " [name=" + name + ", groupId=" + groupId + 
-        ", artefactId=" + artefactId + "]";
+        ", artifactId=" + artifactId + "]";
   }
 }

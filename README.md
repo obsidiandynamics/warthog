@@ -1,33 +1,45 @@
 Warthog
 ===
-Cross-project dependency management for Gradle, at scale. Let's you make changes in one project, publish the build artifacts, then recursively propagate new versions to all dependent projects.
+Cross-project dependency management for Gradle, at scale. Let's you make changes in one project, publish the build artifacts, then propagate new versions to dependent projects.
 
-Example of `.hog.project`:
+# What is Warthog?
+A typical scenario: a bunch of projects with complex inter-dependencies. A team wants to make a release to a library that needs to filter through to other projects which might depend on it. What's involved? A heap of testing for starters. Then publishing build artifacts to a central repository, tagging releases in Git and rolling over to the next snapshot version. What about the teams that depend on this library? They need to discover the latest version, update build files and run tests. And if you have a deep dependency graph, then the same needs to be repeated.
+
+**Warthog** is a simple command-line tool that assists with dependency propagation. It does two things: first — it helps you incorporate updated packages into your Gradle build; second — it lets you publish updates and tag releases in a standardised manner.
+
+# How it works
+Warthog relies on a simple config file named `.hog.project` in the root directory of your Gradle project. A real-world example of `.hog.project` is shown below.
 ```yaml
-build: ./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon
+commands:
+  build: ./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon
+  publish: ./gradlew -x test bintrayUpload --no-daemon
 modules:
 - path: .
   dependencies:
   - name: fulcrum
     groupId: com.obsidiandynamics.fulcrum
-    artefactId: fulcrum-func
+    artifactId: fulcrum-func
   - name: yconf
     groupId: com.obsidiandynamics.yconf
-    artefactId: yconf-core
+    artifactId: yconf-core
   - name: zerolog
     groupId: com.obsidiandynamics.zerolog
-    artefactId: zerolog-core
+    artifactId: zerolog-core
 - path: ledger-meteor
   dependencies:
   - name: meteor
     groupId: com.obsidiandynamics.meteor
-    artefactId: meteor-core
+    artifactId: meteor-core
 - path: ledger-kafka
   dependencies:
   - name: jackdaw
     groupId: com.obsidiandynamics.jackdaw
-    artefactId: jackdaw-core
+    artifactId: jackdaw-core
 ```
+
+The `.hog.project` file is divided into two sections: `commands` and `modules`. The `build` command is invoked as part of the **update** workflow, after patching the build scripts and downloading new Maven packages — ensuring that the build still passes. The `publish` command is used as part of the **release** workflow — pushing the newly-built artifacts into a central repository (e.g. Bintray).
+
+The `modules` section lists the relevant Gradle modules that are in the scope of the update workflow. The `path` attribute specifies the location of the module, relative the project's root directory. For example, `path: .` implies the root module, while `path: ledger-meteor` points to the module located in the `ledger-meteor` subdirectory within the project. A module has a list of `dependencies`. Each dependency is essentially a Maven package that is subject to updates. The `groupId` and `artifactId`
 
 Search bintray for group and artefact:
 https://bintray.com/api/v1/search/packages/maven?g=com.obsidiandynamics.zerolog&a=zerolog-core

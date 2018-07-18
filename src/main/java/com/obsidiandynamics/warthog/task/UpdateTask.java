@@ -24,7 +24,7 @@ public final class UpdateTask {
         .withWorkingDirectory(projectDirectory);
     
     // ensure that the working copy is in sync with the remote
-    trapCommandException(() -> {
+    trapException(() -> {
       out.format("Verifying working copy... ");
       final var gitHasUncommitted = commander.gitHasUncommitted();
       if (gitHasUncommitted) {
@@ -76,7 +76,7 @@ public final class UpdateTask {
     // verify that the build passes
     out.format("Building project... ");
     if (! args.getUpdate().isSkipBuild()) {
-      trapCommandException(() -> {
+      trapException(() -> {
         commander.runCommand(project.getCommands().getBuild());
       });
       out.println(ansi().bold().fgGreen().a("passed").reset());
