@@ -12,10 +12,10 @@ import org.junit.*;
 
 import com.obsidiandynamics.warthog.*;
 import com.obsidiandynamics.warthog.config.*;
-import com.obsidiandynamics.warthog.repository.BintrayRepository.*;
+import com.obsidiandynamics.warthog.repository.MavenRepository.*;
 
-public final class BintrayRepositoryIT {
-  private static CloseableHttpAsyncClient httpClient;
+public final class MavenRepositoryIT {
+private static CloseableHttpAsyncClient httpClient;
   
   @BeforeClass
   public static void beforeClass() throws IOReactorException, NoSuchAlgorithmException {
@@ -34,18 +34,16 @@ public final class BintrayRepositoryIT {
     return new WarthogContext(AnsiConsole.out, null, null, httpClient);
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testExistingPackage() throws Exception {
     final var dependency = new DependencyConfig("zerolog", "com.obsidiandynamics.zerolog", "zerolog-core", null);
-    final var version = new BintrayRepository().resolveLatestVersion(getContext(), dependency);
+    final var version = new MavenRepository().resolveLatestVersion(getContext(), dependency);
     assertTrue("version=" + version, version.matches("^\\d+\\.\\d+\\.\\d+$"));
   }
   
-  @SuppressWarnings("deprecation")
-  @Test(expected=BintrayResponseException.class)
+  @Test(expected=MavenResponseException.class)
   public void testNonExistentPackage() throws Exception {
     final var dependency = new DependencyConfig("zerolog", "com.obsidiandynamics.zerolog", "foo", null);
-    new BintrayRepository().resolveLatestVersion(getContext(), dependency);
+    new MavenRepository().resolveLatestVersion(getContext(), dependency);
   }
 }

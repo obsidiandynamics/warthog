@@ -157,6 +157,7 @@ dependencies {
   compile "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
   compile "org.apache.commons:commons-lang3:3.7"
   compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+  compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
   compile "com.beust:jcommander:1.72"
   compile "org.fusesource.jansi:jansi:1.17.1"
 }

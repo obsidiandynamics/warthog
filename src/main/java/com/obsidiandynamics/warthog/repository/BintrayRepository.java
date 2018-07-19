@@ -10,10 +10,15 @@ import org.apache.http.util.*;
 import com.fasterxml.jackson.databind.*;
 import com.obsidiandynamics.func.*;
 import com.obsidiandynamics.warthog.*;
+import com.obsidiandynamics.warthog.config.*;
 
 /**
- *  Uses the Maven query capability of Bintray to resolve the package version.
+ *  Uses the Maven query capability of Bintray to resolve the package version.<p>
+ *  
+ *  This has been superseded by {@link MavenRepository}, which provides a reliable
+ *  mechanism for querying Maven repositories and will mimic Gradle's behaviour.
  */
+@Deprecated
 public final class BintrayRepository implements ArtifactRepository {
   private final ObjectMapper mapper = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -26,9 +31,9 @@ public final class BintrayRepository implements ArtifactRepository {
   }
   
   @Override
-  public String resolveLatestVersion(WarthogContext context, String groupId, String artefactId) throws Exception {
+  public String resolveLatestVersion(WarthogContext context, DependencyConfig dependency) throws Exception {
     final var url = String.format("https://bintray.com/api/v1/search/packages/maven?g=%s&a=%s", 
-                                  groupId, artefactId);
+                                  dependency.getGroupId(), dependency.getArtifactId());
     final var get = new HttpGet(url);
     get.setHeader("Accepts", ContentType.APPLICATION_JSON.getMimeType());
     final var response = context.getHttpClient().execute(get, null).get();
