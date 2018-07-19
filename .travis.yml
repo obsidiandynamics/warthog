@@ -8,4 +8,4 @@ jdk:
 install:
   - ./gradlew assemble --stacktrace --info
 script:
-  - ./gradlew check integrationTest build javadocJar --stacktrace --info
+  - ./gradlew check integrationTest build javadoc --stacktrace --info
