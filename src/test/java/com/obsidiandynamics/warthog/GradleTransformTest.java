@@ -6,7 +6,14 @@ import java.util.*;
 
 import org.junit.*;
 
+import com.obsidiandynamics.assertion.*;
+
 public final class GradleTransformTest {
+  @Test
+  public void testConformance() {
+    Assertions.assertUtilityClassWellDefined(GradleTransform.class);
+  }
+  
   @Test
   public void testUpdateSingleLineWithTrailing() {
     final var namesToVersions = Collections.singletonMap("fulcrum", "0.17.0");

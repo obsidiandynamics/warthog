@@ -7,6 +7,8 @@ import java.util.regex.*;
 import java.util.stream.*;
 
 public final class GradleTransform {
+  private GradleTransform() {}
+  
   /**
    *  Matches strings in the form '  version = "x.y.z" // trailing comment', the spaces around the '='
    *  character and the text before and after the statement being optional.
@@ -28,8 +30,6 @@ public final class GradleTransform {
   private static Pattern getDependencyVersionPattern(String dependencyName) {
     return Pattern.compile("^(\\s*" + dependencyName + "Version\\s*=\\s*\")(.*)(\".*)$");
   }
-  
-  private GradleTransform() {}
   
   public static String getProjectVersion(File buildFile) throws IOException {
     final var pattern = getProjectVersionPattern();

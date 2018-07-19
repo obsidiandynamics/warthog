@@ -18,8 +18,10 @@ modules:
   - name: meteor
     groupId: com.obsidiandynamics.meteor
     artifactId: meteor-core
+    repoUrl: http://repo1.maven.org/maven2
 - path: ledger-kafka
   dependencies:
   - name: jackdaw
     groupId: com.obsidiandynamics.jackdaw
     artifactId: jackdaw-core
+    repoUrl: http://jcenter.bintray.com

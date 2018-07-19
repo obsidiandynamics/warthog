@@ -90,6 +90,7 @@ allprojects {
     testCompile "com.obsidiandynamics.fulcrum:fulcrum-assert:${fulcrumVersion}"
     testCompile "com.obsidiandynamics.fulcrum:fulcrum-await:${fulcrumVersion}"
     testCompile "com.obsidiandynamics.fulcrum:fulcrum-junit:${fulcrumVersion}"
+    testCompile "com.obsidiandynamics.fulcrum:fulcrum-verifier:${fulcrumVersion}"
     testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-core:2.19.1"
     testCompile "nl.jqno.equalsverifier:equalsverifier:2.4.8"
