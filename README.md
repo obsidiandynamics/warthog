@@ -1,6 +1,7 @@
 Warthog
 ===
 Cross-project release orchestration for Gradle, at scale. Make changes in one project, cut a release, publish the build artifacts, then adopt new packages in dependent projects — using just one command.
+
 [![Build](https://travis-ci.org/obsidiandynamics/warthog.svg?branch=master) ](https://travis-ci.org/obsidiandynamics/warthog#)
 
 # What is Warthog?
