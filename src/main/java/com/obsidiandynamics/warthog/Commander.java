@@ -83,30 +83,26 @@ public final class Commander {
       this.output = output;
       this.exitCode = exitCode;
     }
-
-    public String getCommand() {
-      return command;
-    }
     
-    public Execution printCommand(Consumer<String> sink) {
+    Execution printCommand(Consumer<String> sink) {
       sink.accept(command);
       return this;
     }
 
-    public String getOutput() {
+    String getOutput() {
       return output;
     }
     
-    public Execution printOutput(Consumer<String> sink) {
+    Execution printOutput(Consumer<String> sink) {
       sink.accept(output);
       return this;
     }
 
-    public int getExitCode() {
+    int getExitCode() {
       return exitCode;
     }
     
-    public Execution verifyExitCode(int expectedExitCode) throws CommandExecuteException {
+    Execution verifyExitCode(int expectedExitCode) throws CommandExecuteException {
       if (getExitCode() != expectedExitCode) {
         throw new CommandExecuteException(command, output, exitCode);
       }
