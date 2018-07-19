@@ -1,0 +1,11 @@
+language: java
+os:
+  - linux
+services:
+  - docker
+jdk:
+  - oraclejdk10
+install:
+  - ./gradlew assemble --stacktrace --info
+script:
+  - ./gradlew check integrationTest build javadocJar --stacktrace --info

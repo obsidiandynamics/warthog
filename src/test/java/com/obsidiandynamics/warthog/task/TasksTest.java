@@ -16,4 +16,9 @@ public final class TasksTest {
       throw new Exception("Simulated error");
     });
   }
+
+  @Test
+  public void testTrapExceptionNoError() throws TaskException {
+    Tasks.trapException(() -> {});
+  }
 }
