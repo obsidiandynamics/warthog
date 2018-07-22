@@ -1,4 +1,4 @@
-Warthog
+<img src="https://raw.githubusercontent.com/wiki/obsidiandynamics/warthog/images/warthog-logo.png" width="90px" alt="logo"/> Warthog
 ===
 Cross-project release orchestration for Gradle, at scale. Make changes in one project, cut a release, publish the build artifacts, then adopt new packages in dependent projects — using just one command.
 
