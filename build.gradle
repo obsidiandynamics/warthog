@@ -78,8 +78,8 @@ allprojects {
   }
   
   ext {
-    fulcrumVersion = "0.16.0"
-    yconfVersion = "0.6.0"
+    fulcrumVersion = "0.17.0"
+    yconfVersion = "0.7.0"
     jacksonVersion = "2.9.6"
     httpclientVersion = "4.5.6"
     httpasyncclientVersion = "4.1.3"
