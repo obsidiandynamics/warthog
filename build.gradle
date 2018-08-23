@@ -122,7 +122,7 @@ allprojects {
   }
   
   jacoco {
-    toolVersion = "0.8.2-SNAPSHOT"
+    toolVersion = "0.8.2"
   }
 
   jacocoTestReport {
