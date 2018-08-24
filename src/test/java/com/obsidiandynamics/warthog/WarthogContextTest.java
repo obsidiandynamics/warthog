@@ -18,7 +18,7 @@ public final class WarthogContextTest {
     // can't use PojoVerifier here because of PrintStream — the fabricated instance tries to write to a file
     final var out = Mockito.mock(PrintStream.class);
     final var args = Args.parse();
-    final var project = new ProjectConfig(null, null);
+    final var project = new ProjectConfig(null, null, null);
     final var httpClient = (CloseableHttpAsyncClient) null;
     final var context = new WarthogContext(out, args, project, httpClient);
     assertEquals(out, context.getOut());

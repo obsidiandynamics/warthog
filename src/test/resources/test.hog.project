@@ -25,3 +25,6 @@ modules:
     groupId: com.obsidiandynamics.jackdaw
     artifactId: jackdaw-core
     repoUrl: http://jcenter.bintray.com
+versionist:
+  type: com.obsidiandynamics.warthog.versionist.FileVersionist
+  versionFile: src/main/resources/app.version

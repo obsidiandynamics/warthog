@@ -10,16 +10,6 @@ public final class GradleTransform {
   private GradleTransform() {}
   
   /**
-   *  Matches strings in the form '  version = "x.y.z" // trailing comment', the spaces around the '='
-   *  character and the text before and after the statement being optional.
-   *  
-   *  @return The {@link Pattern} instance.
-   */
-  private static Pattern getProjectVersionPattern() {
-    return Pattern.compile("^(\\s*version\\s*=\\s*\")(.*)(\".*)$");
-  }
-  
-  /**
    *  Matches strings in the form '  nameVersion = "x.y.z" // trailing comment', the spaces around the '='
    *  character and the text before and after the statement being optional. The 'name' portion is the
    *  {@code dependencyName} argument.
@@ -29,44 +19,6 @@ public final class GradleTransform {
    */
   private static Pattern getDependencyVersionPattern(String dependencyName) {
     return Pattern.compile("^(\\s*" + dependencyName + "Version\\s*=\\s*\")(.*)(\".*)$");
-  }
-  
-  public static String getProjectVersion(File buildFile) throws IOException {
-    final var pattern = getProjectVersionPattern();
-    try (var reader = new BufferedReader(new FileReader(buildFile))) {
-      for (var line = reader.readLine(); line != null; line = reader.readLine()) {
-        final var matcher = pattern.matcher(line);
-        if (matcher.matches()) {
-          return matcher.group(2);
-        }
-      }
-    }
-    return null;
-  }
-  
-  public static void updateProjectVersion(File buildFile, String newVersion) throws IOException {
-    final var tempFile = new File(buildFile + ".tmp");
-    tempFile.deleteOnExit();
-    if (tempFile.exists()) tempFile.delete();
-    
-    final var pattern = getProjectVersionPattern();
-    try (var reader = new BufferedReader(new FileReader(buildFile));
-         var writer = new BufferedWriter(new FileWriter(tempFile))) {
-      for (var line = reader.readLine(); line != null; line = reader.readLine()) {
-        final var matcher = pattern.matcher(line);
-        if (matcher.matches()) {
-          final var leadingText = matcher.group(1);   // '  version = "'
-          final var trailingText = matcher.group(3);  // '" // trailing comment'
-          final var updatedLine = leadingText + newVersion + trailingText;
-          writer.write(updatedLine);
-        } else {
-          writer.write(line);
-        }
-        writer.newLine();
-      }
-    }
-    
-    tempFile.renameTo(buildFile);
   }
   
   public static List<Update> updateDependencies(File buildFile, Map<String, String> namesToVersions) throws IOException {

@@ -8,6 +8,7 @@ import java.net.*;
 import org.junit.*;
 
 import com.obsidiandynamics.verifier.*;
+import com.obsidiandynamics.warthog.versionist.*;
 
 public final class ProjectConfigTest {
   @Test
@@ -39,6 +40,10 @@ public final class ProjectConfigTest {
     assertEquals("com.obsidiandynamics.jackdaw", project.getModules()[2].getDependencies()[0].getGroupId());
     assertEquals("jackdaw-core", project.getModules()[2].getDependencies()[0].getArtifactId());
     assertEquals("http://jcenter.bintray.com", project.getModules()[2].getDependencies()[0].getRepoUrl());
+    
+    assertTrue(project.getVersionist() instanceof FileVersionist);
+    final var resourceVersionist = (FileVersionist) project.getVersionist();
+    assertEquals("src/main/resources/app.version", resourceVersionist.getVersionFile());
   }
   
   @Test

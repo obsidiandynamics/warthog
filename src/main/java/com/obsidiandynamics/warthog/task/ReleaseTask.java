@@ -3,8 +3,6 @@ package com.obsidiandynamics.warthog.task;
 import static com.obsidiandynamics.warthog.task.Tasks.*;
 import static org.fusesource.jansi.Ansi.*;
 
-import java.io.*;
-
 import com.obsidiandynamics.func.*;
 import com.obsidiandynamics.warthog.*;
 
@@ -16,17 +14,17 @@ public final class ReleaseTask {
     final var args = context.getArgs();
     final var project = context.getProject();
     final var projectDirectory = args.getCommon().getDirectory();
+    final var versionist = project.getVersionist();
 
     out.println(ansi().fgGreen().a("Running release task").reset());
     final var commander = new Commander()
         .withSink(__ -> {})
         .withWorkingDirectory(projectDirectory);
     
-    final var rootBuildFile = new File(projectDirectory + "/build.gradle");
-    final var initialVersion = Exceptions.wrap(() -> GradleTransform.getProjectVersion(rootBuildFile),
+    final var initialVersion = Exceptions.wrap(() -> versionist.getVersion(projectDirectory),
                                                TaskException.formatted("Error reading build file: %s"));
     if (initialVersion == null) {
-      throw new TaskException("No project version in build file " + rootBuildFile);
+      throw new TaskException("No project version found (" + versionist.describe() + ")");
     }
     if (! Versions.isSnapshot(initialVersion)) {
       throw new TaskException("Version '" + initialVersion + "' does not appear to be a snapshot");
@@ -47,7 +45,7 @@ public final class ReleaseTask {
     // update to release version
     final var releaseVersion = Versions.toRelease(initialVersion);
     out.format("Updating project version: %s -> %s\n", initialVersion, releaseVersion);
-    Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, releaseVersion),
+    Exceptions.wrap(() -> versionist.setVersion(projectDirectory, releaseVersion),
                     TaskException.formatted("Error patching build file: %s"));
     
     // commit, push and tag the release; then publish
@@ -71,7 +69,7 @@ public final class ReleaseTask {
     // roll over to the next snapshot version, commit and push
     final var nextSnapshotVersion = Versions.toSnapshot(Versions.rollMinor(releaseVersion));
     out.format("Updating project version: %s -> %s\n", releaseVersion, nextSnapshotVersion);
-    Exceptions.wrap(() -> GradleTransform.updateProjectVersion(rootBuildFile, nextSnapshotVersion),
+    Exceptions.wrap(() -> versionist.setVersion(projectDirectory, nextSnapshotVersion),
                     TaskException.formatted("Error patching build file: %s"));
     trapException(() -> {
       runConditional(out, "Committing snapshot", "done", true, () -> {
