@@ -2,7 +2,7 @@
 ===
 Cross-project release orchestration for Gradle, at scale. Make changes in one project, cut a release, publish the build artifacts, then adopt new packages in dependent projects — using just one command.
 
-[![Build](https://travis-ci.org/obsidiandynamics/warthog.svg?branch=master) ](https://travis-ci.org/obsidiandynamics/warthog#)
+[![Build](https://travis-ci.org/obsidiandynamics/warthog.svg?branch=master)](https://travis-ci.org/obsidiandynamics/warthog#)
 
 # What is Warthog?
 A typical scenario: a bunch of projects with complex inter-dependencies. A team wants to make a release to a library that needs to filter through to other projects which might depend on it. What's involved? A heap of testing for starters. Then publishing build artifacts to a central repository, tagging releases in Git and rolling over to the next snapshot version. What about the teams that depend on this library? They need to discover the latest version, update build files and run tests. And if you have a deep dependency graph, then the same needs to be repeated.
@@ -37,9 +37,11 @@ modules:
   - name: jackdaw
     groupId: com.obsidiandynamics.jackdaw
     artifactId: jackdaw-core
+versionist:
+  type: com.obsidiandynamics.warthog.versionist.GradleVersionist
 ```
 
-The `.hog.project` file is divided into two sections: `commands` and `modules`. The `build` command is invoked as part of the **update** workflow, after patching the build scripts and downloading new Maven packages — ensuring that the build still passes. The `publish` command is used as part of the **release** workflow — uploading the newly-built artifacts into a central repository (e.g. Bintray).
+The `.hog.project` file is divided into three sections: `commands`, `modules` and `versionist` (the last one being optional). The `build` command is invoked as part of the **update** workflow, after patching the build scripts and downloading new Maven packages — ensuring that the build still passes. The `publish` command is used as part of the **release** workflow — uploading the newly-built artifacts into a central repository (e.g. Bintray).
 
 The `modules` section lists the relevant Gradle modules that are in the scope of the update workflow. The `path` attribute specifies the location of the module, relative the project's root directory. For example, `path: .` implies the root module, while `path: ledger-meteor` points to the module located in the `ledger-meteor` subdirectory within the project. A module has a list of `dependencies`. Each dependency is essentially a Maven package that is subject to updates. The `groupId` and `artifactId` are self-explanatory, and relate to the package itself. The `name` attribute is a special name that is given to a package (or a related group of packages) and **must** appear in your `build.gradle` file(s), in the form `nameVersion = "x.y.z"`. 
 
@@ -74,6 +76,16 @@ dependencies {
   compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
   compile "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
 }
+```
+
+The `versionist` section is optional. It allows you to specify how to manage project versions when preparing a release. The default versionist is `GradleVersionist`, which reads a version string from the root `build.gradle` file and patches the build file with a new version during the release step. Warthog's Gradle versionist expects the project version to be in the form `version = "x.y.z[-qualifier]"`.
+
+Alternatively, use `FileVersionist` if you prefer to keep your project in a separate file outside of `build.gradle`. The example below instructs Warthog's file versionist to source the version from `src/main/resources/app.version` (the path must be relative to the project directory). The version must be stored in a single-line file containing only text in the form `x.y.z[-qualifier]`.
+
+```yaml
+versionist:
+  type: com.obsidiandynamics.warthog.versionist.FileVersionist
+  versionFile: src/main/resources/app.version
 ```
 
 # Getting Started
@@ -123,13 +135,13 @@ Warthog will —
 
 1. Pull any changes into the working copy;
 2. Commit the patched build files from the previous step (and any other tracked pending changes that happen to be in your working copy, so beware);
-3. Change the project version from a snapshot to a release by patching the root `build.gradle` file (i.e. `x.y.z-SNAPSHOT` becomes `x.y.z`);
-4. Commit the patched `build.gradle` with the message `[Warthog] Release x.y.z` (replacing `x.y.z` with the release version);
+3. Change the project version from a snapshot to a release by patching the root `build.gradle` file, i.e. `x.y.z-SNAPSHOT` becomes `x.y.z` (alternatively `FileVersionist` can be used to patch a dedicated version file);
+4. Commit the patched `build.gradle` (or a custom version file) with the message `[Warthog] Release x.y.z` (replacing `x.y.z` with the release version);
 5. Tag the last commit (tag is named `x.y.z` and the message is `Release x.y.z`);
 6. Push the tag to remote;
 7. Publish the build artifacts (using the `publish` command specified in `.hog.project`);
-8. Roll the project minor version in the root `build.gradle` and mark it as a snapshot (i.e. `x.y.z` becomes `x.(y+1).z-SNAPSHOT`);
-9. Commit `build.gradle` with the new snapshot version; and
+8. Roll the project minor version in the root `build.gradle` and mark it as a snapshot, i.e. `x.y.z` becomes `x.(y+1).z-SNAPSHOT` (alternatively `FileVersionist` can be used to patch a dedicated version file);
+9. Commit `build.gradle` (or a custom version file) with the new snapshot version; and
 10. Push `build.gradle` to remote.
 
 The commit message in step 2 can be overridden with the `--message` argument. The default is `[Warthog] Updated dependencies`.
@@ -138,7 +150,7 @@ Steps 5–6 can be skipped with `--skip-tag`.
 
 Step 7 can be skipped with `--skip-publish`.
 
-**Note:** Warthog expects the project version to appear in the root `build.gradle` file, in the form `version = "x.y.z[-qualifier]"`. The version must be conform to [Maven conventions](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN400) and may have optional qualifiers. The second segment from the left (the minor version) will be incremented in the release workflow as part of staging the next snapshot, and therefore must be numeric.
+**Note:** Warthog expects the project version to be in the form `x.y.z[-qualifier]`. The version must be conform to [Maven conventions](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN400) and may have optional qualifiers. The second segment from the left (the minor version) will be incremented in the release workflow as part of staging the next snapshot, and therefore must be numeric.
 
 # Custom Repositories
 By default, Warthog queries the JCenter repository (`http://jcenter.bintray.com`) for package versions, which also conveniently acts as a CDN for Maven Central — giving you access to virtually all publicly available Maven packages.
@@ -163,9 +175,9 @@ modules:
 
 # Limitations
 * Only Gradle is supported, with and without the wrapper. Other build tools, such as Maven, SBT, Ant/Ivy, etc. are not supported.
-* For the release workflow, the project version must be in the root `build.gradle` file and follow the strict `version = "x.y.z[-qualifier]"` form described earlier.
-* Project versions stored outside of the root `build.gradle` aren't presently supported for releases.
 * For the update workflow, the dependency versions must appear in `build.gradle` files in the strict `nameVersion = "x.y.z[-qualifier]"` form described earlier.
+* When using `GradleVersionist`, the version must be in the root `build.gradle` file and follow the strict `version = "x.y.z[-qualifier]"` form described earlier.
+* When using `FileVersionist`, the version file must be stored in a dedicated file (containing nothing but the version).
 * Custom auth for private repos isn't supported at this stage. The assumption is that the repo is reachable solely via a private/trusted network and that the machine running `hog` has implicit access.
 
 # FAQ
