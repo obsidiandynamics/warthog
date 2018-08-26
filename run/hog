@@ -25,5 +25,5 @@ cp $jar /tmp
 classpath=/tmp/$jar_basename
 
 urls=$1
-java -Dwarthog.dir="${invocation_dir}" -cp $classpath com.obsidiandynamics.warthog.Warthog $@
+java -Dwarthog.dir="${invocation_dir}" -cp $classpath com.obsidiandynamics.warthog.Warthog "$@"
 
