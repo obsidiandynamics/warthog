@@ -18,7 +18,7 @@ public final class GradleTransform {
    *  @return The {@link Pattern} instance.
    */
   private static Pattern getDependencyVersionPattern(String dependencyName) {
-    return Pattern.compile("^(\\s*" + dependencyName + "Version\\s*=\\s*\")(.*)(\".*)$");
+    return Pattern.compile("^(.*" + dependencyName + "Version\\s*=\\s*[\"'])(.*)([\"'].*)$");
   }
   
   public static List<Update> updateDependencies(File buildFile, Map<String, String> namesToVersions) throws IOException {
@@ -86,7 +86,7 @@ public final class GradleTransform {
     for (var entry : namesToVersions.entrySet()) {
       final var dependencyName = entry.getKey();
       // we're looking for a line in the form of (ignore single quotes):
-      // 'nameVersion = "x.y.z" // followed by an optional comment'
+      // '  declaration nameVersion = "x.y.z" // followed by an optional comment'
       final var matcher = patterns.get(dependencyName).matcher(line);
       if (matcher.matches()) {
         final var leadingText = matcher.group(1);   // '  nameVersion = "'
