@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 import com.obsidiandynamics.assertion.*;
+import com.obsidiandynamics.warthog.Versions.*;
 
 public final class VersionsTest {
   @Test
@@ -40,12 +41,25 @@ public final class VersionsTest {
   }
   
   @Test
-  public void testRollSegment() {
-    assertEquals("0.2.2", Versions.rollMinor("0.1.2"));
+  public void testRollMajor() {
+    assertEquals("1.0.0", Versions.rollMajor("0.1.2"));
+    assertEquals("1.0-alpha", Versions.rollMajor("0.1-alpha"));
+    assertEquals("foo 1.0.0-SNAPSHOT", Versions.rollMajor("foo 0.1.2-SNAPSHOT"));
+    assertEquals("2.0.0-beta2-SNAPSHOT", Versions.rollMajor("1.2.3-beta2-SNAPSHOT"));
+    assertEquals("1.0", Versions.rollMajor("0.1"));
+  }
+  
+  @Test
+  public void testRollMinor() {
+    assertEquals("0.2.0", Versions.rollMinor("0.1.2"));
     assertEquals("0.2-alpha", Versions.rollMinor("0.1-alpha"));
-    assertEquals("0.2.RC1", Versions.rollMinor("0.1.RC1"));
-    assertEquals("0.2.2-SNAPSHOT", Versions.rollMinor("0.1.2-SNAPSHOT"));
-    assertEquals("0.2.2-beta2-SNAPSHOT", Versions.rollMinor("0.1.2-beta2-SNAPSHOT"));
+    assertEquals("foo 0.2.0-SNAPSHOT", Versions.rollMinor("foo 0.1.2-SNAPSHOT"));
+    assertEquals("0.2.0-beta2-SNAPSHOT", Versions.rollMinor("0.1.2-beta2-SNAPSHOT"));
     assertEquals("0.2", Versions.rollMinor("0.1"));
+  }
+  
+  @Test(expected=InvalidVersionException.class)
+  public void testRollMinorWithInvalidVersion() {
+    Versions.rollMinor("0-beta");
   }
 }
