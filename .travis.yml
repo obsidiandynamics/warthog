@@ -5,6 +5,7 @@ services:
   - docker
 jdk:
   - oraclejdk10
+  - openjdk11
 install:
   - ./gradlew assemble --stacktrace --info
 script:
