@@ -27,13 +27,13 @@ public final class UpdateTask {
     // ensure that the working copy is in sync with the remote
     trapException(() -> {
       runConditional(out, "Verifying working copy", "ready", ! args.getUpdate().isSkipPrep(), () -> {
-        mustBeTrue(! commander.gitHasUncommitted(), 
-                   withMessage("Working copy has uncommitted or untracked changes", TaskException::new));
+        mustBeFalse(commander.gitHasUncommitted(), 
+                    withMessage("Working copy has uncommitted or untracked changes", TaskException::new));
       });
 
       runConditional(out, "Verifying local repository", "ready", ! args.getUpdate().isSkipPrep(), () -> {
-        mustBeTrue(! commander.gitIsAhead(),
-                   withMessage("Local repository is ahead of remote", TaskException::new));
+        mustBeFalse(commander.gitIsAhead(),
+                    withMessage("Local repository is ahead of remote", TaskException::new));
       });
       
       runConditional(out, "Updating local copy", "done", ! args.getUpdate().isSkipPrep(), commander::gitPull);

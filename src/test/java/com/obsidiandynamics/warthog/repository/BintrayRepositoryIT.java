@@ -14,6 +14,7 @@ import com.obsidiandynamics.warthog.*;
 import com.obsidiandynamics.warthog.config.*;
 import com.obsidiandynamics.warthog.repository.BintrayRepository.*;
 
+@Deprecated
 public final class BintrayRepositoryIT {
   private static CloseableHttpAsyncClient httpClient;
   
@@ -34,7 +35,6 @@ public final class BintrayRepositoryIT {
     return new WarthogContext(AnsiConsole.out, null, null, httpClient);
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testExistingPackage() throws Exception {
     final var dependency = new DependencyConfig("zerolog", "com.obsidiandynamics.zerolog", "zerolog-core", null);
@@ -42,7 +42,6 @@ public final class BintrayRepositoryIT {
     assertTrue("version=" + version, version.matches("^\\d+\\.\\d+\\.\\d+$"));
   }
   
-  @SuppressWarnings("deprecation")
   @Test(expected=BintrayResponseException.class)
   public void testNonExistentPackage() throws Exception {
     final var dependency = new DependencyConfig("zerolog", "com.obsidiandynamics.zerolog", "foo", null);
