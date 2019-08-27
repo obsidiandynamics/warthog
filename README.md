@@ -3,6 +3,7 @@
 Cross-project release orchestration for Gradle, at scale. Make changes in one project, cut a release, publish the build artifacts, then adopt new packages in dependent projects — using just one command.
 
 [![Build](https://travis-ci.org/obsidiandynamics/warthog.svg?branch=master)](https://travis-ci.org/obsidiandynamics/warthog#)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/obsidiandynamics/warthog.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/obsidiandynamics/warthog/context:java)
 
 # What is Warthog?
 A typical scenario: a bunch of projects with complex inter-dependencies. A team wants to make a release to a library that needs to filter through to other projects which might depend on it. What's involved? A heap of testing for starters. Then publishing build artifacts to a central repository, tagging releases in Git and rolling over to the next snapshot version. What about the teams that depend on this library? They need to discover the latest version, update build files and run tests. And if you have a deep dependency graph, then the same needs to be repeated.
