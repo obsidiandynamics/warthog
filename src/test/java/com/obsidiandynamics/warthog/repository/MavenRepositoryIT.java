@@ -15,7 +15,7 @@ import com.obsidiandynamics.warthog.config.*;
 import com.obsidiandynamics.warthog.repository.MavenRepository.*;
 
 public final class MavenRepositoryIT {
-private static CloseableHttpAsyncClient httpClient;
+  private static CloseableHttpAsyncClient httpClient;
   
   @BeforeClass
   public static void beforeClass() throws IOReactorException, NoSuchAlgorithmException {
@@ -42,7 +42,7 @@ private static CloseableHttpAsyncClient httpClient;
   }
   
   @Test(expected=MavenResponseException.class)
-  public void testNonExistentPackage() throws Exception {
+  public void testNonexistentPackage() throws Exception {
     final var dependency = new DependencyConfig("zerolog", "com.obsidiandynamics.zerolog", "foo", null);
     new MavenRepository().resolveLatestVersion(getContext(), dependency);
   }

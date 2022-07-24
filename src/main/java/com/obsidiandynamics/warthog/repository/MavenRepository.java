@@ -4,6 +4,7 @@ import static com.obsidiandynamics.func.Functions.*;
 
 import java.util.*;
 
+import com.obsidiandynamics.func.*;
 import org.apache.http.*;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
@@ -25,6 +26,11 @@ public final class MavenRepository implements ArtifactRepository {
     
     MavenResponseException(String m) { super(m); }
   }
+
+  @SuppressWarnings("unchecked")
+  private static <T> T cast(Object obj) {
+    return (T) obj;
+  }
   
   @Override
   public String resolveLatestVersion(WarthogContext context, DependencyConfig dependency) throws Exception {
@@ -39,7 +45,7 @@ public final class MavenRepository implements ArtifactRepository {
     
     final var responseXml = EntityUtils.toString(response.getEntity());
     final var responseMap = mapper.readValue(responseXml, Map.class);
-    return mustExist((String) responseMap.get("version"), 
-                     withMessage("Missing XML element <version>", MavenResponseException::new));
+    final Map<Object, Object> versioningElement = Functions.mustExist(cast(responseMap.get("versioning")), withMessage("Missing XML element <versioning>", MavenResponseException::new));
+    return Functions.mustExist(cast(versioningElement.get("release")), withMessage("Missing XML element <release>", MavenResponseException::new));
   }
 }

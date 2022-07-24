@@ -7,6 +7,6 @@ import com.obsidiandynamics.verifier.*;
 public final class ModuleConfigTest {
   @Test
   public void testPojo() {
-    PojoVerifier.forClass(ModuleConfig.class).excludeToStringField("dependencies").verify();
+    PojoVerifier.forClass(ModuleConfig.class).verify();
   }
 }

@@ -25,7 +25,7 @@ public final class ProjectConfigTest {
     assertEquals("fulcrum", project.getModules()[0].getDependencies()[0].getName());
     assertEquals("com.obsidiandynamics.fulcrum", project.getModules()[0].getDependencies()[0].getGroupId());
     assertEquals("fulcrum-func", project.getModules()[0].getDependencies()[0].getArtifactId());
-    assertEquals("http://jcenter.bintray.com", project.getModules()[0].getDependencies()[0].getRepoUrl());
+    assertEquals("https://repo1.maven.org/maven2", project.getModules()[0].getDependencies()[0].getRepoUrl());
 
     assertEquals("ledger-meteor", project.getModules()[1].getPath());
     assertEquals(1, project.getModules()[1].getDependencies().length);
@@ -39,7 +39,7 @@ public final class ProjectConfigTest {
     assertEquals("jackdaw", project.getModules()[2].getDependencies()[0].getName());
     assertEquals("com.obsidiandynamics.jackdaw", project.getModules()[2].getDependencies()[0].getGroupId());
     assertEquals("jackdaw-core", project.getModules()[2].getDependencies()[0].getArtifactId());
-    assertEquals("http://jcenter.bintray.com", project.getModules()[2].getDependencies()[0].getRepoUrl());
+    assertEquals("http://repo1.maven.org/maven2", project.getModules()[2].getDependencies()[0].getRepoUrl());
     
     assertTrue(project.getVersionist() instanceof FileVersionist);
     final var resourceVersionist = (FileVersionist) project.getVersionist();
@@ -48,6 +48,6 @@ public final class ProjectConfigTest {
   
   @Test
   public void testPojo() {
-    PojoVerifier.forClass(ProjectConfig.class).excludeToStringField("modules").verify();
+    PojoVerifier.forClass(ProjectConfig.class).verify();
   }
 }

@@ -1,6 +1,6 @@
 plugins {
-  id "com.github.johnrengelman.shadow" version "2.0.4"
-  id "com.github.ben-manes.versions" version "0.20.0"
+  id "com.github.johnrengelman.shadow" version "7.1.2"
+  id "com.github.ben-manes.versions" version "0.42.0"
 }
 apply plugin: "maven-publish"
 
@@ -56,13 +56,12 @@ def baseJvmArgs = [
   "-XX:+TieredCompilation",
   "-XX:+UseNUMA",
   "-XX:+UseCondCardMark",
-  "-XX:-UseBiasedLocking",
   "-Djava.net.preferIPv4Stack=true"
 ]
 project.ext.set("baseJvmArgs", baseJvmArgs)
 
 allprojects {
-  apply plugin: "java"
+  apply plugin: "java-library"
   apply plugin: "jacoco"
   apply plugin: "maven-publish"
   apply plugin: "com.github.johnrengelman.shadow"
@@ -71,7 +70,7 @@ allprojects {
   targetCompatibility = 10
 
   repositories {
-    jcenter()
+    mavenCentral()
     maven {
       url "https://oss.sonatype.org/content/repositories/snapshots"
     }
@@ -79,45 +78,32 @@ allprojects {
   
   ext {
     commonslangVersion = "3.8"
-    equalsverifierVersion = "2.5.2"
-    fulcrumVersion = "0.25.0"
+    equalsverifierVersion = "3.10"
+    fulcrumVersion = "0.37.0"
     jacksonVersion = "2.9.6"
     jansiVersion = "1.17.1"
     jcommanderVersion = "1.72"
     junitVersion = "4.12"
     httpasyncclientVersion = "4.1.4"
     httpclientVersion = "4.5.6"
-    mockitoVersion = "2.22.0"
-    pojotesterVersion = "0.7.6"
-    yconfVersion = "0.10.0"
+    mockitoVersion = "4.6.1"
+    pojotesterVersion = "0.9.0"
+    yconfVersion = "0.21.0"
     
     repoDir = "${project(':').projectDir}/../../repo"
   }
   
   dependencies {
-    testCompile "com.obsidiandynamics.fulcrum:fulcrum-assert:${fulcrumVersion}"
-    testCompile "com.obsidiandynamics.fulcrum:fulcrum-await:${fulcrumVersion}"
-    testCompile "com.obsidiandynamics.fulcrum:fulcrum-junit:${fulcrumVersion}"
-    testCompile "com.obsidiandynamics.fulcrum:fulcrum-verifier:${fulcrumVersion}"
-    testCompile "junit:junit:${junitVersion}"
-    testCompile "org.mockito:mockito-core:${mockitoVersion}"
-    testCompile "nl.jqno.equalsverifier:equalsverifier:${equalsverifierVersion}"
-    testCompile "pl.pojo:pojo-tester:${pojotesterVersion}"
+    testImplementation "com.obsidiandynamics.fulcrum:fulcrum-assert:${fulcrumVersion}"
+    testImplementation "com.obsidiandynamics.fulcrum:fulcrum-await:${fulcrumVersion}"
+    testImplementation "com.obsidiandynamics.fulcrum:fulcrum-junit:${fulcrumVersion}"
+    testImplementation "com.obsidiandynamics.fulcrum:fulcrum-verifier:${fulcrumVersion}"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "nl.jqno.equalsverifier:equalsverifier:${equalsverifierVersion}"
+    testImplementation "com.obsidiandynamics.pojotester:core:${pojotesterVersion}"
   }
   
-  compileJava {
-    options.compilerArgs += "-proc:none"
-  }
-
-  compileTestJava {
-    options.compilerArgs += "-proc:none"
-  }
-  
-  tasks.withType(JavaCompile) {
-    options.fork = true
-    options.incremental = true
-  }
-
   test {
     include "**/*Test.class"
     jvmArgs += baseJvmArgs
@@ -129,18 +115,23 @@ allprojects {
   }
   
   jacoco {
-    toolVersion = "0.8.2"
+    toolVersion = "0.8.8"
+  }
+
+  task verify {
+    dependsOn test
+    dependsOn integrationTest
   }
 
   jacocoTestReport {
-    additionalSourceDirs = files(sourceSets.main.allSource.srcDirs)
-    sourceDirectories = files(sourceSets.main.allSource.srcDirs)
-    classDirectories = files(sourceSets.main.output)
-    executionData = files("$buildDir/jacoco/test.exec") + files("$buildDir/jacoco/integrationTest.exec")
+    additionalSourceDirs.from = files(sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from = files(sourceSets.main.allSource.srcDirs)
+    classDirectories.from = files(sourceSets.main.output)
+    executionData.from = files("$buildDir/jacoco/test.exec") + file("$buildDir/jacoco/integrationTest.exec")
     reports {
-      html.enabled true
-      xml.enabled true
-      csv.enabled false
+      html.required = true
+      xml.required = true
+      csv.required = false
     }
   }
 
@@ -155,44 +146,39 @@ subprojects {
 }
 
 dependencies {
-  compile "com.obsidiandynamics.fulcrum:fulcrum-func:${fulcrumVersion}"
-  compile "com.obsidiandynamics.fulcrum:fulcrum-io:${fulcrumVersion}"
-  compile "com.obsidiandynamics.fulcrum:fulcrum-props:${fulcrumVersion}"
-  compile "com.obsidiandynamics.fulcrum:fulcrum-shell:${fulcrumVersion}"
-  compile "com.obsidiandynamics.fulcrum:fulcrum-version:${fulcrumVersion}"
-  compile "com.obsidiandynamics.yconf:yconf-core:${yconfVersion}"
-  compile "com.obsidiandynamics.yconf:yconf-snakeyaml:${yconfVersion}"
-  compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
-  compile "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
-  compile "org.apache.commons:commons-lang3:${commonslangVersion}"
-  compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-  compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
-  compile "com.beust:jcommander:${jcommanderVersion}"
-  compile "org.fusesource.jansi:jansi:${jansiVersion}"
+  api "com.obsidiandynamics.fulcrum:fulcrum-func:${fulcrumVersion}"
+  api "com.obsidiandynamics.fulcrum:fulcrum-io:${fulcrumVersion}"
+  api "com.obsidiandynamics.fulcrum:fulcrum-props:${fulcrumVersion}"
+  api "com.obsidiandynamics.fulcrum:fulcrum-shell:${fulcrumVersion}"
+  api "com.obsidiandynamics.fulcrum:fulcrum-version:${fulcrumVersion}"
+  api "com.obsidiandynamics.yconf:yconf-core:${yconfVersion}"
+  api "com.obsidiandynamics.yconf:yconf-snakeyaml:${yconfVersion}"
+  api "org.apache.httpcomponents:httpclient:${httpclientVersion}"
+  api "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
+  api "org.apache.commons:commons-lang3:${commonslangVersion}"
+  api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+  api "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}"
+  api "com.beust:jcommander:${jcommanderVersion}"
+  api "org.fusesource.jansi:jansi:${jansiVersion}"
 }
 
 task jacocoRootReport(type: JacocoReport) {
-  mustRunAfter = allprojects.test + allprojects.integrationTest
-  additionalSourceDirs = files(allprojects.sourceSets.main.allSource.srcDirs)
-  sourceDirectories = files(allprojects.sourceSets.main.allSource.srcDirs)
-  classDirectories = files(allprojects.sourceSets.main.output)
-  executionData = files(allprojects.jacocoTestReport.executionData)
+  mustRunAfter = allprojects.test + allprojects.integrationTest + allprojects.javadoc
+  additionalSourceDirs.from = files(allprojects.sourceSets.main.allSource.srcDirs)
+  sourceDirectories.from = files(allprojects.sourceSets.main.allSource.srcDirs)
+  classDirectories.from = files(allprojects.sourceSets.main.output)
+  executionData.setFrom project.fileTree(dir: '.', include: ['**/build/jacoco/test.exec', '**/build/jacoco/integrationTest.exec'])
   reports {
-    html.enabled true
-    xml.enabled true
-    csv.enabled false
+    html.required = true
+    xml.required = true
+    csv.required = false
   }
   onlyIf = {
     true
   }
-  doFirst {
-    executionData = files(executionData.findAll {
-      it.exists()
-    })
-  }
   afterEvaluate {
-    classDirectories = files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: ["sample/**", "**/*Uncovered*", "**/generated/**"])
+    classDirectories.from = files(classDirectories.files.collect {
+      fileTree(dir: it, exclude: ["sample/**", "**/*Uncovered*"])
     })
   }
 }

@@ -6,7 +6,7 @@ import com.obsidiandynamics.yconf.*;
 
 @Y
 public final class DependencyConfig {
-  private static final String DEF_BASE_URL = "http://jcenter.bintray.com";
+  private static final String DEF_BASE_URL = "https://repo1.maven.org/maven2";
   
   private final String name;
   
