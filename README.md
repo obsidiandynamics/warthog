@@ -6,7 +6,7 @@ Cross-project release orchestration for Gradle, at scale. Make changes in one pr
 [![Gradle build](https://github.com/obsidiandynamics/warthog/actions/workflows/master.yml/badge.svg)](https://github.com/obsidiandynamics/warthog/actions/workflows/master.yml)
 
 # What is Warthog?
-A typical scenario: a bunch of projects with complex inter-dependencies. A team wants to make a release to a library that needs to filter through to other projects which might depend on it. What's involved? A heap of testing for starters. Then publishing build artifacts to a central repository, tagging releases in Git and rolling over to the next snapshot version. What about the teams that depend on this library? They need to discover the latest version, update build files and run tests. And if you have a deep dependency graph, then the same needs to be repeated.
+A typical scenario: a bunch of projects with complex interdependencies. A team wants to make a release to a library that needs to filter through to other projects which might depend on it. What's involved? A heap of testing for starters. Then publishing build artifacts to a central repository, tagging releases in Git and rolling over to the next snapshot version. What about the teams that depend on this library? They need to discover the latest version, update build files and run tests. And if you have a deep dependency graph, then the same needs to be repeated.
 
 **Warthog** is a simple command-line tool that assists with dependency propagation. It does two things: first — it helps you incorporate updated packages into your Gradle build; second — it lets you publish updates and tag releases in a standardised and repeatable manner.
 
@@ -15,7 +15,7 @@ Warthog relies on a simple config file named `.hog.project` in the root director
 ```yaml
 commands:
   build: ./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon
-  publish: ./gradlew -x test bintrayUpload --no-daemon
+  publish: ./gradlew -x test publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon
 modules:
 - path: .
   dependencies:
@@ -42,7 +42,7 @@ versionist:
   type: com.obsidiandynamics.warthog.versionist.GradleVersionist
 ```
 
-The `.hog.project` file is divided into three sections: `commands`, `modules` and `versionist` (the last one being optional). The `build` command is invoked as part of the **update** workflow, after patching the build scripts and downloading new Maven packages — ensuring that the build still passes. The `publish` command is used as part of the **release** workflow — uploading the newly-built artifacts into a central repository (e.g. Bintray).
+The `.hog.project` file is divided into three sections: `commands`, `modules` and `versionist` (the last one being optional). The `build` command is invoked as part of the **update** workflow, after patching the build scripts and downloading new Maven packages — ensuring that the build still passes. The `publish` command is used as part of the **release** workflow — uploading the newly-built artifacts into a central repository (e.g., Sonatype).
 
 The `modules` section lists the relevant Gradle modules that are in the scope of the update workflow. The `path` attribute specifies the location of the module, relative the project's root directory. For example, `path: .` implies the root module, while `path: ledger-meteor` points to the module located in the `ledger-meteor` subdirectory within the project. A module has a list of `dependencies`. Each dependency is essentially a Maven package that is subject to updates. The `groupId` and `artifactId` are self-explanatory, and relate to the package itself. The `name` attribute is a special name that is given to a package (or a related group of packages) and **must** appear in your `build.gradle` file(s), in the form `nameVersion = "x.y.z"`. 
 
@@ -55,16 +55,16 @@ ext {
 }
 
 dependencies {
-  compile "com.obsidiandynamics.fulcrum:fulcrum-concat:${fulcrumVersion}"        // a 'fulcrum' package
-  compile "com.obsidiandynamics.fulcrum:fulcrum-flow:${fulcrumVersion}"          // a 'fulcrum' package
-  compile "com.obsidiandynamics.fulcrum:fulcrum-func:${fulcrumVersion}"          // a 'fulcrum' package
-  compile "com.obsidiandynamics.yconf:yconf-core:${yconfVersion}"                // a 'yconf' package
-  compile "com.obsidiandynamics.zerolog:zerolog-core:${zerologVersion}"          // a 'zerolog' package
-  compile "org.apache.commons:commons-lang3:3.7"                                 // another package that Warthog doesn't care about
+  api "com.obsidiandynamics.fulcrum:fulcrum-concat:${fulcrumVersion}"        // a 'fulcrum' package
+  api "com.obsidiandynamics.fulcrum:fulcrum-flow:${fulcrumVersion}"           // a 'fulcrum' package
+  api "com.obsidiandynamics.fulcrum:fulcrum-func:${fulcrumVersion}"          // a 'fulcrum' package
+  api "com.obsidiandynamics.yconf:yconf-core:${yconfVersion}"                // a 'yconf' package
+  api "com.obsidiandynamics.zerolog:zerolog-core:${zerologVersion}"          // a 'zerolog' package
+  api "org.apache.commons:commons-lang3:3.7"                                 // another package that Warthog doesn't care about
 }
 ```
 
-The real magic happens when Warthog parses the build file, looking for that coveted `nameVersion = ...` string. As soon as it finds a `nameVersion` assignment matching one of the dependencies listed in `.hog.project`, it queries the repository for the latest version and then patches the source `build.gradle` file, replacing the original version with what's in the repository. For example, if the latest version of `fulcrum` is actually `0.17.0`, then the string `fulcrumVersion = "0.16.0"` is patched to `fulcrumVersion = "0.17.0"`. 
+The real magic happens when Warthog parses the build file, looking for that coveted `nameVersion = ...` string. As soon as it finds a `nameVersion` assignment matching one of the dependencies listed in `.hog.project`, it queries the repository for the latest version and then patches the source `build.gradle` file, replacing the original version with what's in the repository. For example, if the latest version of `fulcrum` is now `0.17.0`, then the string `fulcrumVersion = "0.16.0"` is patched to `fulcrumVersion = "0.17.0"`. 
 
 In the above example, the `fulcrum` library actually includes three artifacts: `fulcrum-concat`, `fulcrum-flow` and `fulcrum-func`; however, we got lazy and only declared one in `.hog.project`. That's fine — Warthog just needs one artifact to establish the latest version; it doesn't matter which one or whether it is even in the build file — as long as all artifacts in the group share the same version. Where this isn't the case (for example, [Apache HttpComponents](https://hc.apache.org), which uses non-uniform versioning within the same group), we'll have to make do with a dedicated `nameVersion` string per artifact, as shown below.
 ```groovy
@@ -74,8 +74,8 @@ ext {
 }
 
 dependencies {
-  compile "org.apache.httpcomponents:httpclient:${httpclientVersion}"
-  compile "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
+  api "org.apache.httpcomponents:httpclient:${httpclientVersion}"
+  api "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
 }
 ```
 
@@ -93,7 +93,7 @@ versionist:
 ## Requirements
 Warthog works on *NIX and macOS and requires a local installation of [Java 10 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk10-downloads-4416644.html). We also need Git. Windows-based environments are not supported.
 
-JDK 10 is only a requirement to build and run Warthog; the actual projects may still be built with an appropriate version of the JDK.
+JDK 10 is only a requirement to build and run Warthog; the actual projects may be built with an appropriate version of the JDK.
 
 ## Installation
 Paste the following into a terminal.
@@ -136,12 +136,12 @@ Warthog will —
 
 1. Pull any changes into the working copy;
 2. Commit the patched build files from the previous step (and any other tracked pending changes that happen to be in your working copy, so beware);
-3. Change the project version from a snapshot to a release by patching the root `build.gradle` file, i.e. `x.y.z-SNAPSHOT` becomes `x.y.z` (alternatively `FileVersionist` can be used to patch a dedicated version file);
+3. Change the project version from a snapshot to a release, by patching the root `build.gradle` file, i.e., `x.y.z-SNAPSHOT` becomes `x.y.z` (alternatively `FileVersionist` can be used to patch a dedicated version file);
 4. Commit the patched `build.gradle` (or a custom version file) with the message `[Warthog] Release x.y.z` (replacing `x.y.z` with the release version);
 5. Tag the last commit (tag is named `x.y.z` and the message is `Release x.y.z`);
 6. Push the tag to remote;
 7. Publish the build artifacts (using the `publish` command specified in `.hog.project`);
-8. Roll the project minor version in the root `build.gradle` and mark it as a snapshot, i.e. `x.y.z` becomes `x.(y+1).z-SNAPSHOT` (alternatively `FileVersionist` can be used to patch a dedicated version file);
+8. Roll the project minor version in the root `build.gradle` and mark it as a snapshot; i.e., `x.y.z` becomes `x.(y+1).z-SNAPSHOT` (alternatively `FileVersionist` can be used to patch a dedicated version file);
 9. Commit `build.gradle` (or a custom version file) with the new snapshot version; and
 10. Push `build.gradle` to remote.
 
@@ -151,10 +151,10 @@ Steps 5–6 can be skipped with `--skip-tag`.
 
 Step 7 can be skipped with `--skip-publish`.
 
-**Note:** Warthog expects the project version to be in the form `x.y.z[-qualifier]`. The version must be conform to [Maven conventions](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN400) and may have optional qualifiers. The second segment from the left (the minor version) will be incremented in the release workflow as part of staging the next snapshot, and therefore must be numeric.
+**Note:** Warthog expects the project version to be in the form `x.y.z[-qualifier]`. The version must conform to [Maven conventions](https://docs.oracle.com/middleware/1212/core/MAVEN/maven_version.htm#MAVEN400) and may have optional qualifiers. The second segment from the left (the minor version) will be incremented in the release workflow as part of staging the next snapshot, and therefore must be numeric.
 
 # Custom Repositories
-By default, Warthog queries the JCenter repository (`http://jcenter.bintray.com`) for package versions, which also conveniently acts as a CDN for Maven Central — giving you access to virtually all publicly available Maven packages.
+By default, Warthog queries the Maven Central repository (`https://repo1.maven.org/maven2`) for package versions.
 
 Warthog can be instructed to use any Maven-compliant repository (for example, your organisation's internal repo) by overriding the `repoUrl` attribute in the dependency configuration, as shown in the example below.
 ```yaml
@@ -171,8 +171,7 @@ modules:
 # Gotchas
 * Warthog workflows take care in ensuring that they operate on clean working copies and synced local repos. The likelihood of collisions is low, but not zero. Warthog will terminate if any of the orchestrated operations fail, leaving you to resolve conflicts manually.
 * If running `update` and `release` with a time gap in-between, it's recommended that you commit any work that you may have done separately, so it doesn't get bundled into Warthog's commits.
-* Tagging does not automatically include release notes, as this is outside the scope of plain Git. (GitHub, GitLab, BitBucket, _et al._ have their own concepts of releases.) You'll need to manually write up a release and link it to a prior tag. (Future Warthog could offer deeper integration into hosted repositories.)
-* Occasionally the latest package version reported by a repository mightn't be what you want. Sometimes package publishers do not set the right version as the latest; this has nothing to do with Warthog.
+* Tagging does not automatically include release notes, as this is outside the scope of plain Git. (GitHub, GitLab, BitBucket, _et al._ have their own concept of releases.) You'll need to manually write up a release and link it to a prior tag. (Future Warthog could offer deeper integration into hosted repositories.)
 
 # Limitations
 * Only Gradle is supported, with and without the wrapper. Other build tools, such as Maven, SBT, Ant/Ivy, etc. are not supported.

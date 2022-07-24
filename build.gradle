@@ -191,6 +191,6 @@ artifacts {
 def packageName = "warthog"
 
 jar {
-  baseName packageName
+  archiveBaseName.set(packageName)
   finalizedBy jacocoRootReport
 }
