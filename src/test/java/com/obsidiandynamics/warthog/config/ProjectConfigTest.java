@@ -12,7 +12,7 @@ import com.obsidiandynamics.warthog.versionist.*;
 
 public final class ProjectConfigTest {
   @Test
-  public void testFromUri() throws FileNotFoundException, IOException {
+  public void testFromUri() throws IOException {
     final var project = ProjectConfig.fromUri(URI.create("cp://test.hog.project"));
     assertNotNull(project);
     assertEquals("./gradlew test cleanIntegrationTest integrationTest --info --stacktrace --no-daemon", project.getCommands().getBuild());

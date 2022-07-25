@@ -40,14 +40,14 @@ public final class UpdateTask {
     });
     
     // implementation will cover all Maven-compatible repos
-    final var respository = new MavenRepository();
+    final var repository = new MavenRepository();
     
     // step through the modules, upgrading the build files
     boolean updatedAnyModule = false;
     for (var module : project.getModules()) {
       out.format("Scanning module [%s] for updates... ", module.getPath());
       final var buildFile = projectDirectory + "/" + module.getPath() + "/build.gradle";
-      final var namesToVersions = Exceptions.wrap(() -> respository.bulkResolve(context, module.getDependencies()),
+      final var namesToVersions = Exceptions.wrap(() -> repository.bulkResolve(context, module.getDependencies()),
                                                   TaskException.formatted("Error looking up version: %s"));
       final var updates = Exceptions.wrap(() -> GradleTransform.updateDependencies(new File(buildFile), namesToVersions),
                                           TaskException.formatted("Error patching build file: %s"));

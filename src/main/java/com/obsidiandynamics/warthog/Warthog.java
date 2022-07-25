@@ -58,19 +58,18 @@ public final class Warthog {
           switch (args.getCommand()) {
             case "update":
               UpdateTask.perform(context);
-              return;
+              break;
 
             case "release":
               ReleaseTask.perform(context);
-              return;
+              break;
 
             default:
               exitWithError(out, "Unsupported command " + args.getCommand());
-              return;
+              break;
           }
         } else {
           out.println("No command given; exiting.");
-          return;
         }
       } finally {
         // clean up

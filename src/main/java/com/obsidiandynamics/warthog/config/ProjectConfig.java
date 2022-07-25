@@ -43,7 +43,7 @@ public final class ProjectConfig {
         ", versionist=" + versionist + "]";
   }
   
-  public static ProjectConfig fromUri(URI uri) throws FileNotFoundException, IOException {
+  public static ProjectConfig fromUri(URI uri) throws IOException {
     return new MappingContext().withParser(new SnakeyamlParser()).fromStream(ResourceLoader.stream(uri)).map(ProjectConfig.class);
   }
 }

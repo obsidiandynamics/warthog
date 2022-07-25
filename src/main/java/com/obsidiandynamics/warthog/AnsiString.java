@@ -17,8 +17,7 @@ public final class AnsiString {
     final var matcher = Pattern.compile(regex, Pattern.MULTILINE).matcher(string);
     return new AnsiString(matcher.replaceAll(result -> {
       final var group = result.group(0);
-      final var replacement = style.toString() + group + ansi().reset().toString();
-      return replacement;
+      return style.toString() + group + ansi().reset().toString();
     }));
   }
   
